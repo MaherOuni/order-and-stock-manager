@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Application</RootNamespace>
+    <AssemblyName>Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Abstractions only: the DbContext implementation itself lives in Infrastructure. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(EfCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

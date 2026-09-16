@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Domain</RootNamespace>
+    <AssemblyName>Domain</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    The Domain layer is deliberately dependency-free: no EF Core, no ASP.NET Core.
+    Persistence concerns live in Infrastructure (Fluent API only, per CLAUDE.md).
+  -->
+
+</Project>

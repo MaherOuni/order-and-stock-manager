@@ -1,0 +1,19 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- XML docs feed the Swagger descriptions; 1591 would demand a comment on every member. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Pinned once for every project in the solution. -->
+    <EfCoreVersion>8.0.8</EfCoreVersion>
+    <NpgsqlEfCoreVersion>8.0.8</NpgsqlEfCoreVersion>
+  </PropertyGroup>
+
+</Project>

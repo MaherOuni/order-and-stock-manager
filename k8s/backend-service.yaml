@@ -1,0 +1,18 @@
+# ClusterIP: the Ingress is the only way in from outside. Swapping this to LoadBalancer would
+# bypass the Ingress and, with it, the TLS termination configured there.
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderstock-api
+  labels:
+    app.kubernetes.io/name: orderstock-api
+    app.kubernetes.io/part-of: orderstock
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: orderstock-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

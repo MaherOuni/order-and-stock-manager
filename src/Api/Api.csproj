@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Api</RootNamespace>
+    <AssemblyName>Api</AssemblyName>
+    <UserSecretsId>orderstock-api</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(EfCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Composition root: the only place allowed to reference Infrastructure. -->
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Core\Application\Application.csproj" />
+  </ItemGroup>
+
+</Project>

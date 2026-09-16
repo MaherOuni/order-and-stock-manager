@@ -1,0 +1,70 @@
+# Applies pending EF Core migrations, then exits.
+#
+# Not in the requested file list, but the deployment does not work without it: the API pods run
+# with Database__MigrateOnStartup=false precisely so that two replicas cannot race each other
+# through the migration history table, which leaves someone having to create the schema.
+#
+# Run it before every rollout that carries a migration:
+#
+#   kubectl apply -f k8s/migrate-job.yaml
+#   kubectl wait --for=condition=complete job/orderstock-migrate --timeout=180s
+#   kubectl logs job/orderstock-migrate
+#
+# A Job is immutable once created, so re-running means deleting it first:
+#
+#   kubectl delete job orderstock-migrate --ignore-not-found
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: orderstock-migrate
+  labels:
+    app.kubernetes.io/name: orderstock-migrate
+    app.kubernetes.io/part-of: orderstock
+spec:
+  backoffLimit: 3
+  # Clears itself up an hour after finishing, so a stale Job does not block the next deploy.
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orderstock-migrate
+        app.kubernetes.io/part-of: orderstock
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+        runAsGroup: 1654
+      containers:
+        - name: migrate
+          # Keep in lockstep with backend-deployment.yaml: the schema and the code that expects
+          # it should always come from the same build.
+          image: ghcr.io/OWNER/orderstock-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          # Appended to the image's ENTRYPOINT, giving `dotnet Api.dll --migrate`.
+          args: ["--migrate"]
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ConnectionStrings__Default
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: ConnectionStrings__Default
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

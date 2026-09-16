@@ -1,0 +1,45 @@
+# Storage for PostgreSQL.
+#
+# The PersistentVolume below uses hostPath, which is right for minikube/kind/k3s and wrong for
+# anything with more than one node — the data lives on whichever node happened to schedule the
+# pod. On a managed cluster, DELETE the PersistentVolume from this file and give the claim a
+# storageClassName instead (gp3, premium-rwo, standard-rwo, …); the provisioner then creates
+# the volume for you.
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: orderstock
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  # Retain, not Delete: releasing the claim must not take the restaurant's orders with it.
+  persistentVolumeReclaimPolicy: Retain
+  # Empty string, not absent: this opts the volume out of dynamic provisioning so the claim
+  # below binds to *this* volume rather than having a new one created.
+  storageClassName: ""
+  hostPath:
+    path: /data/orderstock/postgres
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: orderstock
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # Must match the PV's class exactly. On a managed cluster, replace with e.g.
+  # storageClassName: gp3
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi

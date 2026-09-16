@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <title>Order</title>
+    <base href="/" />
+    <!-- viewport-fit=cover lets the cart drawer sit against the bottom edge; the components
+         then pad themselves back off it with env(safe-area-inset-bottom). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="description" content="Scan, browse the menu and order from your table." />
+    <meta name="theme-color" content="#f6f3ef" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Optional runtime API base URL and demo flag; see src/environments/. -->
+    <script src="env.js"></script>
+    <!-- Applies the saved theme before first paint. Without this a dark-mode user gets a
+         white flash on every load, because Angular has not bootstrapped yet. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('orderstock-theme');
+          if (saved === 'dark') {
+            document.documentElement.dataset.theme = 'dark';
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#121110');
+          }
+        } catch (e) {
+          /* private mode: light it is */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

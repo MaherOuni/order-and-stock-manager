@@ -1,0 +1,43 @@
+# Routes api.example.com to the .NET API.
+#
+# Assumes the ingress-nginx controller and cert-manager. On another controller, change
+# ingressClassName and the annotation prefix; the rules themselves are portable.
+#
+# The Angular app is NOT here — it is served by Vercel from its own domain. That is exactly why
+# the API needs a CORS origin configured (see backend-deployment.yaml): the browser treats
+# order.example.com and api.example.com as different origins.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orderstock-api
+  labels:
+    app.kubernetes.io/name: orderstock-api
+    app.kubernetes.io/part-of: orderstock
+  annotations:
+    # Issues and renews the certificate named in tls.secretName below.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # An order's basket is small; this is generous and still cheap to reject abuse.
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    # CORS is answered by the API itself, from its own allow-list. Turning it on here as well
+    # would produce duplicate Access-Control-Allow-Origin headers, which browsers reject.
+    nginx.ingress.kubernetes.io/enable-cors: "false"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.example.com
+      secretName: orderstock-api-tls
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          # Everything: /api/v1/... plus /health and, in a non-production environment, /swagger.
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: orderstock-api
+                port:
+                  name: http

@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderstock-api
+  labels:
+    app.kubernetes.io/name: orderstock-api
+    app.kubernetes.io/part-of: orderstock
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orderstock-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orderstock-api
+        app.kubernetes.io/part-of: orderstock
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        # $APP_UID in the aspnet:8.0 image.
+        runAsUser: 1654
+        runAsGroup: 1654
+      containers:
+        - name: api
+          # Replace with your registry. `latest` is deliberately not used: a rollout should be
+          # a deliberate change of tag, and `kubectl rollout undo` needs something to go back to.
+          image: ghcr.io/OWNER/orderstock-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+
+            # --- Database -----------------------------------------------------------------
+            # Double underscore is how .NET reads a nested key from the environment:
+            # ConnectionStrings__Default == ConnectionStrings:Default.
+            - name: ConnectionStrings__Default
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: ConnectionStrings__Default
+
+            # --- CORS ---------------------------------------------------------------------
+            # The browser origin of the Angular app on Vercel. An array in configuration is an
+            # indexed set of environment variables; add __1, __2 for preview domains.
+            # Getting this wrong is the classic "the site loads but nothing fetches" failure.
+            - name: Cors__AllowedOrigins__0
+              value: https://order.example.com
+            - name: Cors__AllowedOrigins__1
+              value: https://order-stock.vercel.app
+
+            # --- Schema -------------------------------------------------------------------
+            # Off: with two replicas, whichever booted first would race the other through
+            # EF Core migrations. Schema changes go through k8s/migrate-job.yaml.
+            - name: Database__MigrateOnStartup
+              value: "false"
+            - name: Database__SeedDemoTenant
+              value: "false"
+
+            # The Ingress terminates TLS, so the app sees plain HTTP; trusting the forwarded
+            # headers keeps generated URLs and logged client IPs honest.
+            - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+              value: "true"
+
+          # Liveness deliberately ignores the database — restarting every pod during a
+          # database blip turns a degraded service into no service at all.
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Readiness does check it: a pod that cannot reach PostgreSQL has nothing to serve
+          # and should drop out of the Service's endpoints until it can.
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 3
+            failureThreshold: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            # Workable today because the API writes nothing but temp files. When authentication
+            # arrives, ASP.NET Core Data Protection will want somewhere to persist its key ring
+            # — that wants a real shared store (the database or a mounted volume), not a
+            # per-pod emptyDir that throws the keys away on every restart.
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

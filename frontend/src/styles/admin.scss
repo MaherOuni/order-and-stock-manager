@@ -1,0 +1,448 @@
+/* Shared admin chrome. Global on purpose: tables, cards, pills and form fields repeat across
+   six views, and duplicating them into every component's scoped styles is worse than one
+   prefixed block here. Everything is namespaced `a-` so it cannot collide with the customer
+   app. */
+
+.a-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 60rem) {
+  .a-page {
+    padding: 1.75rem 2rem 3rem;
+  }
+}
+
+.a-page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.a-page__title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.a-page__hint {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.a-section-title {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.a-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ surfaces -- */
+
+.a-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.a-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.a-card__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* KPI tile, the thing that makes a dashboard read as a dashboard. */
+.a-stats {
+  display: grid;
+  gap: 0.875rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.a-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1.125rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.a-stat__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.a-stat__label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.a-stat__value {
+  margin: 0.125rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-stat__meta {
+  margin: 0.125rem 0 0;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+/* -------------------------------------------------------------------- tables -- */
+
+/* Tables scroll sideways rather than squashing; an admin on a tablet still gets whole cells. */
+.a-table-wrap {
+  overflow-x: auto;
+}
+
+.a-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.a-table th,
+.a-table td {
+  padding: 0.75rem 1.125rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.a-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.a-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.a-table tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+.a-table td.a-wrap {
+  white-space: normal;
+  min-width: 14rem;
+}
+
+.a-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-row--alert td {
+  background: color-mix(in srgb, var(--danger-surface) 55%, transparent);
+}
+
+.a-row--alert:hover td {
+  background: var(--danger-surface);
+}
+
+.a-muted {
+  color: var(--text-muted);
+}
+
+/* Name + thumbnail, the pattern both references use everywhere. */
+.a-media {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.a-thumb {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--surface-3);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.a-thumb--lg {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+/* -------------------------------------------------------------------- badges -- */
+
+.a-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1875rem 0.5625rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.a-badge--danger {
+  background: var(--danger-surface);
+  color: var(--danger-text);
+}
+
+.a-badge--warning {
+  background: var(--warning-surface);
+  color: var(--warning-text);
+}
+
+.a-badge--success {
+  background: var(--success-surface);
+  color: var(--success-text);
+}
+
+.a-badge--info {
+  background: var(--info-surface);
+  color: var(--info-text);
+}
+
+.a-badge--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------- buttons -- */
+
+.a-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.9375rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.a-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.a-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.a-btn--primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: var(--shadow-sm);
+}
+
+.a-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: transparent;
+}
+
+.a-btn--danger {
+  border-color: transparent;
+  background: var(--danger-surface);
+  color: var(--danger-text);
+}
+
+.a-btn--sm {
+  padding: 0.3125rem 0.6875rem;
+  font-size: 0.75rem;
+}
+
+/* Filter pill row — "All / Coffee / Non-Coffee" in the references. */
+.a-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.3125rem;
+  background: var(--surface-3);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.a-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.a-pill {
+  flex: 0 0 auto;
+  padding: 0.375rem 0.8125rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.a-pill:hover {
+  color: var(--text);
+}
+
+.a-pill--active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --------------------------------------------------------------------- forms -- */
+
+.a-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
+  min-width: 0;
+}
+
+.a-field__label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.a-input,
+.a-select {
+  width: 100%;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.a-input:focus,
+.a-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.a-input--num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-grid {
+  display: grid;
+  gap: 0.875rem;
+}
+
+@media (min-width: 34rem) {
+  .a-grid--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.a-span-2 {
+  grid-column: 1 / -1;
+}
+
+/* --------------------------------------------------------------------- state -- */
+
+.a-empty {
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.a-error {
+  padding: 0.6875rem 0.9375rem;
+  border-radius: var(--radius-sm);
+  background: var(--danger-surface);
+  color: var(--danger-text);
+  font-size: 0.8125rem;
+}
+
+.a-note {
+  padding: 0.6875rem 0.9375rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.a-spinner {
+  display: inline-block;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: a-spin 0.8s linear infinite;
+}
+
+@keyframes a-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
