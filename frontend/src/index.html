@@ -13,6 +13,15 @@
     <meta name="description" content="Scan, browse the menu and order from your table." />
     <meta name="theme-color" content="#f6f3ef" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Sen is the typeface the customer screens are drawn in; see styles/client.scss. The
+         admin dashboard stays on system-ui, so this is the only font fetched, and `swap` means
+         a slow font never holds up the menu. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
     <!-- Optional runtime API base URL and demo flag; see src/environments/. -->
     <script src="env.js"></script>
     <!-- Applies the saved theme before first paint. Without this a dark-mode user gets a

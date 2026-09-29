@@ -208,7 +208,7 @@ interface StatusView {
         padding: 1.5rem 1.25rem;
         border-radius: var(--radius-lg);
         background: var(--surface);
-        border: 1px solid var(--border);
+        box-shadow: var(--shadow-xl);
         box-shadow: var(--shadow-sm);
         text-align: center;
       }
@@ -303,8 +303,8 @@ interface StatusView {
         margin-top: 1rem;
         padding: 1rem;
         background: var(--surface);
-        border: 1px solid var(--border);
         border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
@@ -377,19 +377,29 @@ interface StatusView {
       .primary,
       .danger {
         flex: 1 1 8rem;
+        min-height: 3rem;
         padding: 0.8125rem 1rem;
-        border-radius: var(--radius-pill);
+        border: 0;
+        border-radius: var(--radius);
         font: inherit;
-        font-size: 0.875rem;
-        font-weight: 650;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
         text-align: center;
+        text-transform: uppercase;
         text-decoration: none;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .ghost:active:not(:disabled),
+      .primary:active:not(:disabled),
+      .danger:active:not(:disabled) {
+        transform: scale(var(--press-scale));
       }
 
       .ghost {
-        border: 1px solid var(--border);
-        background: var(--surface);
+        background: var(--surface-2);
         color: var(--text);
       }
 
@@ -398,7 +408,6 @@ interface StatusView {
       }
 
       .primary {
-        border: 0;
         background: var(--accent);
         color: var(--accent-contrast);
       }
@@ -408,7 +417,6 @@ interface StatusView {
       }
 
       .danger {
-        border: 0;
         background: var(--danger-surface);
         color: var(--danger-text);
       }
@@ -417,8 +425,8 @@ interface StatusView {
         margin-top: 1.5rem;
         padding: 1.125rem;
         background: var(--surface);
-        border: 1px solid var(--border);
         border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
@@ -451,13 +459,13 @@ interface StatusView {
 
       .input {
         width: 100%;
-        padding: 0.6875rem 0.875rem;
-        border: 1px solid var(--border);
+        padding: 0.875rem 1.125rem;
+        border: 1px solid transparent;
         border-radius: var(--radius-sm);
-        background: var(--surface);
+        background: var(--surface-2);
         color: var(--text);
         font: inherit;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
       }
 
       .reference {

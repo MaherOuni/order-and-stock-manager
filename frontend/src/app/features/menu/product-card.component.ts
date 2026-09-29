@@ -15,38 +15,41 @@ import { MoneyPipe } from '../../core/money.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" class="card" (click)="open.emit(product())">
-      @if (showImage()) {
-        <img
-          class="thumb"
-          [src]="product().imageUrl"
-          [alt]="''"
-          loading="lazy"
-          decoding="async"
-          (error)="imageFailed.set(true)"
-        />
-      } @else {
-        <span class="thumb thumb--fallback" [style.background]="fallbackColor()" aria-hidden="true">
-          {{ initial() }}
-        </span>
-      }
-
-      <span class="body">
-        <span class="name">{{ product().name }}</span>
-
-        @if (product().description) {
-          <span class="description">{{ product().description }}</span>
+      <span class="media">
+        @if (showImage()) {
+          <img
+            class="thumb"
+            [src]="product().imageUrl"
+            [alt]="''"
+            loading="lazy"
+            decoding="async"
+            (error)="imageFailed.set(true)"
+          />
+        } @else {
+          <span
+            class="thumb thumb--fallback"
+            [style.background]="fallbackColor()"
+            aria-hidden="true"
+          >
+            {{ initial() }}
+          </span>
         }
 
-        <span class="footer">
-          <span class="price">{{ product().price | money: currency() }}</span>
-
-          @if (quantity() > 0) {
-            <span class="badge badge--count">{{ quantity() }} in basket</span>
-          }
-        </span>
+        @if (quantity() > 0) {
+          <span class="badge">{{ quantity() }} in basket</span>
+        }
       </span>
 
-      <span class="add" aria-hidden="true">+</span>
+      <span class="name">{{ product().name }}</span>
+
+      @if (product().description) {
+        <span class="description">{{ product().description }}</span>
+      }
+
+      <span class="footer">
+        <span class="price">{{ product().price | money: currency() }}</span>
+        <span class="add" aria-hidden="true">+</span>
+      </span>
     </button>
   `,
   styles: [
@@ -55,17 +58,16 @@ import { MoneyPipe } from '../../core/money.pipe';
         display: block;
       }
 
+      /* A tile, not a row: image on top, then the name, then the price paired with the round
+         add button. Two of these fit side by side, which is how the menu is drawn. */
       .card {
-        display: grid;
-        grid-template-columns: 5.25rem 1fr auto;
-        align-items: center;
-        gap: 0.875rem;
+        display: flex;
+        flex-direction: column;
         width: 100%;
-        padding: 0.75rem;
-        /* Translucent hairline over an ambient pool: the card reads as floating on the page
-           rather than drawn onto it, which is the whole point of the treatment. */
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-3xl);
+        height: 100%;
+        padding: 0.5rem 0.5rem 0.875rem;
+        border: 0;
+        border-radius: var(--radius-lg);
         background: var(--surface);
         box-shadow: var(--shadow-xl);
         color: inherit;
@@ -74,8 +76,7 @@ import { MoneyPipe } from '../../core/money.pipe';
         cursor: pointer;
         transition:
           transform var(--press-dur) var(--press-ease),
-          box-shadow var(--press-dur) var(--press-ease),
-          border-color var(--press-dur) var(--press-ease);
+          box-shadow var(--press-dur) var(--press-ease);
       }
 
       .card:active {
@@ -83,94 +84,99 @@ import { MoneyPipe } from '../../core/money.pipe';
         box-shadow: var(--shadow-sm);
       }
 
+      .media {
+        position: relative;
+        display: block;
+        margin-bottom: 0.75rem;
+      }
+
       .thumb {
-        width: 5.25rem;
-        height: 5.25rem;
-        /* Nested radius: the inner curve has to be tighter than the outer one by the padding,
-           or the corners read as two unrelated arcs. */
-        border-radius: calc(var(--radius-3xl) - 0.75rem);
+        display: block;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        /* Inset by the card's own padding, so the two curves sit concentric. */
+        border-radius: calc(var(--radius-lg) - 0.5rem);
         object-fit: cover;
-        background: var(--surface-3);
+        background: var(--surface-2);
       }
 
       .thumb--fallback {
         display: grid;
         place-items: center;
         color: #fff;
-        font-size: 1.75rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 800;
         text-transform: uppercase;
       }
 
-      .body {
-        display: flex;
-        flex-direction: column;
-        gap: 0.1875rem;
-        min-width: 0;
+      /* Over the image rather than beside the price: the tile is narrow, and the price row has
+         only enough room for the price and the button. */
+      .badge {
+        position: absolute;
+        left: 0.5rem;
+        bottom: 0.5rem;
+        padding: 0.1875rem 0.5rem;
+        border-radius: var(--radius-sm);
+        background: var(--accent);
+        color: var(--accent-contrast);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        line-height: 1.3;
       }
 
-      /* The hierarchy the whole card hangs on: a near-black semibold title against a muted
-         stone description, so the eye lands on the dish name first at arm's length. */
       .name {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        padding: 0 0.375rem;
         color: var(--text);
         font-size: 0.9375rem;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 1.3;
-        letter-spacing: -0.01em;
       }
 
       .description {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: 0.125rem;
+        padding: 0 0.375rem;
         color: var(--text-muted);
         font-size: 0.8125rem;
         line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
       }
 
       .footer {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 0.5rem;
-        margin-top: 0.375rem;
+        /* Pins the price row to the bottom, so tiles of unequal text still line up. */
+        margin-top: auto;
+        padding: 0.625rem 0.375rem 0;
       }
 
       .price {
         color: var(--text);
+        font-size: 1.0625rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        letter-spacing: -0.01em;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: var(--radius-pill);
-        font-size: 0.75rem;
-        font-weight: 500;
-        line-height: 1.2;
-        white-space: nowrap;
-      }
-
-      .badge--count {
-        background: var(--accent-soft);
-        color: var(--accent-hover);
       }
 
       .add {
         display: grid;
         place-items: center;
-        width: 2.25rem;
-        height: 2.25rem;
+        flex: 0 0 auto;
+        width: 1.875rem;
+        height: 1.875rem;
         border-radius: 50%;
         background: var(--accent);
         color: var(--accent-contrast);
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: 1.125rem;
+        font-weight: 700;
         line-height: 1;
-        box-shadow: 0 4px 12px -2px var(--accent-glow);
       }
     `,
   ],

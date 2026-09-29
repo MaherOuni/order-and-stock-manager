@@ -50,7 +50,9 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       .backdrop {
         position: absolute;
         inset: 0;
-        background: rgb(15 23 42 / 45%);
+        /* The file's dark navy rather than a neutral black, so the dimmed page stays in the
+           same colour family as the cart screen. */
+        background: rgb(18 18 35 / 55%);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         animation: fade 0.22s var(--press-ease);
@@ -113,7 +115,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
         align-items: flex-start;
         justify-content: space-between;
         gap: 0.75rem;
-        padding: 0.25rem 1.25rem 0.875rem;
+        padding: 0.25rem var(--gutter) 1rem;
       }
 
       .title {
@@ -121,11 +123,11 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
         color: var(--text);
         font-size: 1.25rem;
         font-weight: 700;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
       }
 
       .subtitle {
-        margin: 0.125rem 0 0;
+        margin: 0.25rem 0 0;
         color: var(--text-muted);
         font-size: 0.8125rem;
       }
@@ -133,19 +135,21 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       .body {
         flex: 1;
         overflow-y: auto;
-        padding: 0 1.25rem;
+        padding: 0 var(--gutter);
       }
 
       .foot:empty {
         display: none;
       }
 
+      /* No rule above the actions: the design separates the footer with space and an upward
+         shadow, so the sheet reads as one surface rather than two stacked panels. */
       .foot {
         display: flex;
         gap: 0.625rem;
-        padding: 0.875rem 1.25rem calc(0.875rem + env(safe-area-inset-bottom, 0));
-        border-top: 1px solid var(--border);
+        padding: 1rem var(--gutter) calc(1rem + env(safe-area-inset-bottom, 0));
         background: var(--surface);
+        box-shadow: var(--shadow-lg);
       }
     `,
   ],

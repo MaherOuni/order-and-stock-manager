@@ -45,26 +45,28 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
   template: `
     <header class="header">
       <div class="header__row">
-        <div>
+        <div class="header__where">
           <p class="header__eyebrow">
-            <app-icon name="dineIn" [size]="14" />
-            Table {{ tableNumber() }}
+            <app-icon name="dineIn" [size]="12" />
+            Ordering for
           </p>
-          <h1 class="header__name">{{ tenant()?.name ?? 'Menu' }}</h1>
+          <p class="header__table">Table {{ tableNumber() }}</p>
         </div>
 
-        <button type="button" class="help" (click)="helpOpen.set(true)">
-          <app-icon name="alert" [size]="16" />
-          <span>Help</span>
+        <button type="button" class="c-round c-round--ink help" (click)="helpOpen.set(true)">
+          <app-icon name="alert" [size]="18" />
+          <span class="visually-hidden">Help</span>
         </button>
       </div>
 
+      <h1 class="header__name">{{ tenant()?.name ?? 'Menu' }}</h1>
+
       <input
-        class="search"
+        class="c-field search"
         type="search"
         [value]="search()"
         (input)="search.set(text($event))"
-        placeholder="Search the menu…"
+        placeholder="Search dishes…"
         aria-label="Search the menu"
       />
     </header>
@@ -86,23 +88,30 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
         (select)="selectedCategoryId.set($event)"
       />
 
-      <main class="list" [class.list--with-bar]="!cart.isEmpty()">
-        @for (product of visibleProducts(); track product.id) {
-          <app-product-card
-            [product]="product"
-            [currency]="currency()"
-            [quantity]="cart.quantityOf(product.id)"
-            (open)="selectedProduct.set($event)"
-          />
-        } @empty {
-          <p class="empty">Nothing matches. Try another section.</p>
-        }
+      <main class="main" [class.main--with-bar]="!cart.isEmpty()">
+        <div class="c-section">
+          <h2 class="c-section__title">{{ sectionTitle() }}</h2>
+          <span class="count">{{ visibleProducts().length }} items</span>
+        </div>
+
+        <div class="grid">
+          @for (product of visibleProducts(); track product.id) {
+            <app-product-card
+              [product]="product"
+              [currency]="currency()"
+              [quantity]="cart.quantityOf(product.id)"
+              (open)="selectedProduct.set($event)"
+            />
+          } @empty {
+            <p class="empty">Nothing matches. Try another section.</p>
+          }
+        </div>
       </main>
     }
 
     @if (!cart.isEmpty() && !checkoutOpen()) {
       <div class="bar">
-        <button type="button" class="bar__cta" (click)="checkoutOpen.set(true)">
+        <button type="button" class="c-cta bar__cta" (click)="checkoutOpen.set(true)">
           <span class="bar__count">{{ cart.itemCount() }}</span>
           <span class="bar__text">View basket</span>
           <span class="bar__total">{{ cart.totalPrice() | money: currency() }}</span>
@@ -147,30 +156,30 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
   `,
   styles: [
     `
-      /* A phone-width column, centred. The menu is designed for the screen a QR code is
-         scanned with, and letting it stretch across a laptop strands the "+" a hand's width
-         from the dish it belongs to. Capping it keeps the intended proportions everywhere. */
+      /* A phone column, centred. These screens are drawn for a 375px frame, and letting them
+         stretch across a laptop strands the add button a hand's width from its dish. */
       :host {
         display: block;
-        max-width: 30rem;
+        max-width: 28rem;
         margin-inline: auto;
         min-height: 100dvh;
         background: var(--bg);
       }
 
       .header {
-        padding: calc(env(safe-area-inset-top, 0) + 1.25rem) var(--gutter) 0.875rem;
-        background: var(--glass);
-        backdrop-filter: blur(var(--blur));
-        -webkit-backdrop-filter: blur(var(--blur));
-        border-bottom: 1px solid var(--glass-border);
+        padding: calc(env(safe-area-inset-top, 0) + 1.5rem) var(--gutter) 1rem;
+        background: var(--bg);
       }
 
       .header__row {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
+      }
+
+      .header__where {
+        min-width: 0;
       }
 
       .header__eyebrow {
@@ -178,82 +187,72 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
         align-items: center;
         gap: 0.3125rem;
         margin: 0;
-        padding: 0.25rem 0.75rem;
-        border-radius: var(--radius-pill);
-        background: var(--accent-soft);
-        color: var(--accent-hover);
+        color: var(--accent);
         font-size: 0.75rem;
-        font-weight: 500;
-      }
-
-      .header__name {
-        margin: 0.4375rem 0 0;
-        color: var(--text);
-        font-size: 1.625rem;
         font-weight: 700;
-        line-height: 1.1;
-        letter-spacing: -0.03em;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
-      .help {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3125rem;
-        padding: 0.4375rem 0.8125rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-pill);
-        background: var(--surface);
-        color: var(--text-muted);
-        font: inherit;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: transform var(--press-dur) var(--press-ease);
+      .header__table {
+        margin: 0.25rem 0 0;
+        color: var(--text);
+        font-size: 0.875rem;
+        font-weight: 700;
       }
 
-      .help:active {
-        transform: scale(var(--press-scale));
+      /* Regular rather than bold: the design leads with the place name at a light weight and
+         saves the heavy weight for prices and buttons. */
+      .header__name {
+        margin: 1.25rem 0 0;
+        color: var(--text);
+        font-size: 1.5rem;
+        font-weight: 400;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
       }
 
       .search {
-        width: 100%;
-        margin-top: 0.875rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-pill);
-        background: var(--surface);
-        color: var(--text);
-        font: inherit;
-        font-size: 0.9375rem;
-        box-shadow: var(--shadow-xl);
-        transition:
-          border-color var(--press-dur) var(--press-ease),
-          box-shadow var(--press-dur) var(--press-ease);
+        margin-top: 1rem;
       }
 
-      .search::placeholder {
-        color: var(--text-faint);
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
 
-      .search:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 4px var(--accent-soft);
+      .main {
+        padding: 1.5rem var(--gutter) 2rem;
       }
 
-      .list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 0.875rem var(--gutter);
+      /* Room for the floating bar, so the last tile is never trapped underneath it. */
+      .main--with-bar {
+        padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0));
       }
 
-      /* Room for the floating bar, so the last item is never trapped underneath it. */
-      .list--with-bar {
-        padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0));
+      .count {
+        flex: 0 0 auto;
+        color: var(--text-muted);
+        font-size: 0.8125rem;
+      }
+
+      /* Two tiles across, the way the menu is drawn. Stretching them is what lets each card
+         push its price row to the bottom and stay level with its neighbour. */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 1.25rem 1rem;
       }
 
       .empty {
+        grid-column: 1 / -1;
         margin: 2rem 0;
         text-align: center;
         color: var(--text-muted);
@@ -276,7 +275,7 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
       .spinner {
         width: 1.75rem;
         height: 1.75rem;
-        border: 3px solid var(--border);
+        border: 3px solid var(--surface-2);
         border-top-color: var(--accent);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
@@ -289,77 +288,50 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
       }
 
       .retry {
-        padding: 0.5rem 1.125rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-pill);
-        background: var(--surface);
-        color: var(--text);
+        padding: 0.625rem 1.25rem;
+        border: 0;
+        border-radius: var(--radius);
+        background: var(--accent);
+        color: var(--accent-contrast);
         font: inherit;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
       }
 
-      /* A floating glass tray holding the CTA, rather than a bare button: the blur separates
-         the bar from whatever is scrolling behind it without needing an opaque block, and the
-         solid accent button inside keeps the call to action at full strength. */
+      /* The cart bar rides on its own shelf against the bottom edge, the way the design seats
+         the order summary: an upward shadow rather than a rule, and no gap underneath. */
       .bar {
         position: fixed;
-        /* Fixed positioning takes it out of the centred column, so it re-centres itself:
-           both insets set, a matching cap, and auto margins to split the remainder. */
-        left: var(--gutter);
-        right: var(--gutter);
-        max-width: calc(30rem - 2 * var(--gutter));
-        margin-inline: auto;
-        bottom: calc(env(safe-area-inset-bottom, 0) + 0.875rem);
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 30;
-        /* Enough inset that the blur is legible as a tray; any tighter and it reads as a
-           stray outline around the button rather than a surface holding it. */
-        padding: 0.5rem;
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-3xl);
-        background: var(--glass);
-        backdrop-filter: blur(var(--blur));
-        -webkit-backdrop-filter: blur(var(--blur));
+        max-width: 28rem;
+        margin-inline: auto;
+        padding: 1rem var(--gutter) calc(1rem + env(safe-area-inset-bottom, 0));
+        background: var(--surface);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         box-shadow: var(--shadow-lg);
         animation: bar-in 260ms var(--press-ease);
       }
 
       @keyframes bar-in {
         from {
-          transform: translateY(0.75rem);
-          opacity: 0;
+          transform: translateY(100%);
         }
       }
 
       .bar__cta {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        width: 100%;
-        padding: 0.8125rem 1rem;
-        border: 0;
-        border-radius: calc(var(--radius-3xl) - 0.5rem);
-        background: var(--accent);
-        color: var(--accent-contrast);
-        font: inherit;
-        cursor: pointer;
-        transition:
-          transform var(--press-dur) var(--press-ease),
-          background-color var(--press-dur) var(--press-ease);
-      }
-
-      .bar__cta:active {
-        transform: scale(var(--press-scale));
-        background: var(--accent-hover);
+        justify-content: space-between;
       }
 
       .bar__count {
         display: grid;
         place-items: center;
-        width: 1.75rem;
-        height: 1.75rem;
+        width: 1.625rem;
+        height: 1.625rem;
         border-radius: 50%;
-        background: rgb(255 255 255 / 22%);
+        background: rgb(255 255 255 / 25%);
         font-size: 0.8125rem;
         font-weight: 700;
       }
@@ -367,12 +339,11 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
       .bar__text {
         flex: 1;
         text-align: left;
-        font-weight: 700;
       }
 
       .bar__total {
-        font-weight: 700;
         font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
       }
     `,
   ],
@@ -414,6 +385,18 @@ export class MenuPageComponent {
           product.name.toLowerCase().includes(term) ||
           (product.description ?? '').toLowerCase().includes(term),
       );
+  });
+
+  /**
+   * What the grid is currently showing. The design gives the list a heading, and repeating
+   * "Menu" over a filtered set would be a heading that tells the reader nothing.
+   */
+  protected readonly sectionTitle = computed(() => {
+    if (this.search().trim()) return 'Results';
+
+    const id = this.selectedCategoryId();
+
+    return this.categories().find((category) => category.id === id)?.name ?? 'All dishes';
   });
 
   protected readonly selectedProduct = signal<ProductDto | null>(null);

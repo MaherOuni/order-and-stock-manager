@@ -44,21 +44,19 @@ import { CategoryDto } from '../../core/api.models';
         position: sticky;
         top: 0;
         z-index: 20;
-        /* Glass, so the list visibly slides under the rail instead of hitting an opaque band. */
-        background: var(--glass);
-        backdrop-filter: blur(var(--blur));
-        -webkit-backdrop-filter: blur(var(--blur));
-        border-bottom: 1px solid var(--glass-border);
+        background: var(--bg);
       }
 
       .tabs {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.625rem;
         overflow-x: auto;
-        padding: 0.625rem var(--gutter);
+        /* Vertical padding leaves room for the chips' shadow, which would otherwise be clipped
+           by the scroll container. */
+        padding: 0.5rem var(--gutter) 0.875rem;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
-        /* A tab dragged into view settles flush with the gutter rather than half-cut. */
+        /* A chip dragged into view settles flush with the gutter rather than half-cut. */
         scroll-snap-type: x proximity;
         scroll-padding-inline: var(--gutter);
       }
@@ -67,23 +65,25 @@ import { CategoryDto } from '../../core/api.models';
         display: none;
       }
 
+      /* Raised white pills, the way the category row is drawn: no outline, a soft drop shadow,
+         and the selected one filled with the accent. */
       .tab {
         flex: 0 0 auto;
         scroll-snap-align: start;
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--glass-border);
+        padding: 0.625rem 1.25rem;
+        border: 0;
         border-radius: var(--radius-pill);
         background: var(--surface);
         color: var(--text-muted);
         font: inherit;
-        font-weight: 500;
+        font-weight: 700;
         font-size: 0.875rem;
         white-space: nowrap;
+        box-shadow: var(--shadow-xl);
         cursor: pointer;
         transition:
           background-color var(--press-dur) var(--press-ease),
           color var(--press-dur) var(--press-ease),
-          border-color var(--press-dur) var(--press-ease),
           transform var(--press-dur) var(--press-ease);
       }
 
@@ -93,10 +93,8 @@ import { CategoryDto } from '../../core/api.models';
 
       .tab--active {
         background: var(--accent);
-        border-color: transparent;
         color: var(--accent-contrast);
-        font-weight: 600;
-        box-shadow: 0 4px 12px -2px var(--accent-glow);
+        box-shadow: 0 6px 16px -4px var(--accent-glow);
       }
     `,
   ],

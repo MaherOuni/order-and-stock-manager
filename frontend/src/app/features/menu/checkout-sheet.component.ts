@@ -87,7 +87,7 @@ export interface CheckoutDetails {
         }
       </ul>
 
-      <h3 class="section">How would you like it?</h3>
+      <h3 class="c-label section">How would you like it?</h3>
       <div class="types">
         @for (type of orderTypes; track type) {
           <button
@@ -106,13 +106,13 @@ export interface CheckoutDetails {
         <div class="a-grid-2">
           <label class="field">
             <span class="field__label">Table</span>
-            <input class="input" [value]="tableNumber()" (input)="tableOverride.set(text($event))" />
+            <input class="c-field input" [value]="tableNumber()" (input)="tableOverride.set(text($event))" />
           </label>
 
           <label class="field">
             <span class="field__label">How many of you?</span>
             <input
-              class="input"
+              class="c-field input"
               type="number"
               min="1"
               max="30"
@@ -125,7 +125,7 @@ export interface CheckoutDetails {
         <label class="field">
           <span class="field__label">Your name</span>
           <input
-            class="input"
+            class="c-field input"
             [value]="customerName()"
             (input)="customerName.set(text($event))"
             placeholder="So we can call it out"
@@ -137,7 +137,7 @@ export interface CheckoutDetails {
             Phone {{ orderType() === 'Delivery' ? '(required)' : '(optional)' }}
           </span>
           <input
-            class="input"
+            class="c-field input"
             type="tel"
             [value]="customerPhone()"
             (input)="customerPhone.set(text($event))"
@@ -150,7 +150,7 @@ export interface CheckoutDetails {
         <label class="field">
           <span class="field__label">Delivery address</span>
           <input
-            class="input"
+            class="c-field input"
             [value]="deliveryAddress()"
             (input)="deliveryAddress.set(text($event))"
             placeholder="Street, number, floor"
@@ -161,7 +161,7 @@ export interface CheckoutDetails {
       <label class="field">
         <span class="field__label">Allergies or anything the kitchen must know</span>
         <input
-          class="input"
+          class="c-field input"
           [value]="allergyNotes()"
           (input)="allergyNotes.set(text($event))"
           placeholder="Nut allergy, no pork…"
@@ -169,7 +169,7 @@ export interface CheckoutDetails {
         />
       </label>
 
-      <h3 class="section">Payment</h3>
+      <h3 class="c-label section">Payment</h3>
       <div class="methods">
         @for (method of paymentMethods; track method) {
           <button
@@ -202,7 +202,7 @@ export interface CheckoutDetails {
 
         <button
           type="button"
-          class="submit"
+          class="c-cta submit"
           [disabled]="submitting() || validationError() !== null"
           (click)="place()"
         >
@@ -213,13 +213,19 @@ export interface CheckoutDetails {
   `,
   styles: [
     `
+      /* The basket sits on the file's dark navy, the way the cart screen puts the order on a
+         dark ground and everything you fill in on white below it. It also does real work here:
+         the form underneath is long, and the block keeps "what I ordered" visually separate
+         from "how I want it". */
       .lines {
         list-style: none;
-        margin: 0;
-        padding: 0;
+        margin: 0 0 1.5rem;
+        padding: 1rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.875rem;
+        border-radius: var(--radius-lg);
+        background: var(--ink);
       }
 
       .line {
@@ -227,6 +233,11 @@ export interface CheckoutDetails {
         grid-template-columns: 1fr auto auto;
         align-items: center;
         gap: 0.625rem;
+      }
+
+      .line + .line {
+        padding-top: 0.875rem;
+        border-top: 1px solid rgb(255 255 255 / 8%);
       }
 
       .line__text {
@@ -237,8 +248,9 @@ export interface CheckoutDetails {
       }
 
       .line__name {
+        color: #fff;
         font-size: 0.9375rem;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .chips {
@@ -262,52 +274,59 @@ export interface CheckoutDetails {
       }
 
       .line__note {
-        color: var(--text-muted);
+        color: rgb(255 255 255 / 55%);
         font-size: 0.75rem;
       }
 
+      /* Round buttons on the dark block, matching the cart screen's quantity control. */
       .stepper {
         display: flex;
         align-items: center;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-pill);
+        gap: 0.5rem;
       }
 
       .stepper button {
+        display: grid;
+        place-items: center;
         width: 1.875rem;
         height: 1.875rem;
         border: 0;
         border-radius: 50%;
-        background: transparent;
-        color: var(--accent);
+        background: rgb(255 255 255 / 12%);
+        color: #fff;
         font: inherit;
-        font-size: 1.0625rem;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1;
         cursor: pointer;
-        transition: transform var(--press-dur) var(--press-ease);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease);
       }
 
       .stepper button:active:not(:disabled) {
         transform: scale(var(--press-scale));
+        background: rgb(255 255 255 / 22%);
       }
 
       .stepper span {
         min-width: 1.25rem;
         text-align: center;
-        font-weight: 650;
+        color: #fff;
+        font-weight: 700;
         font-variant-numeric: tabular-nums;
       }
 
       .line__total {
         min-width: 4.5rem;
         text-align: right;
-        font-weight: 650;
+        color: #fff;
+        font-weight: 700;
         font-variant-numeric: tabular-nums;
       }
 
       .section {
-        margin: 1.25rem 0 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 700;
+        margin: 1.5rem 0 0.75rem;
       }
 
       .a-grid-2 {
@@ -322,21 +341,26 @@ export interface CheckoutDetails {
         gap: 0.5rem;
       }
 
+      /* Flat grey tiles that fill with the accent when chosen — the same selected/unselected
+         language as the size chips on the detail screen. */
       .type {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.3125rem;
-        padding: 0.75rem 0.25rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-2xl);
-        background: var(--surface);
+        gap: 0.375rem;
+        padding: 0.875rem 0.25rem;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
         color: var(--text-muted);
         font: inherit;
         font-size: 0.75rem;
-        font-weight: 650;
+        font-weight: 700;
         cursor: pointer;
-        transition: transform var(--press-dur) var(--press-ease);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease),
+          color var(--press-dur) var(--press-ease);
       }
 
       .type:active {
@@ -344,39 +368,23 @@ export interface CheckoutDetails {
       }
 
       .type--active {
-        border-color: var(--accent);
-        background: var(--accent-soft);
-        color: var(--accent);
+        background: var(--accent);
+        color: var(--accent-contrast);
       }
 
       .field {
         display: flex;
         flex-direction: column;
-        gap: 0.3125rem;
-        margin-top: 0.75rem;
+        gap: 0.5rem;
+        margin-top: 1rem;
       }
 
       .field__label {
-        color: var(--text-muted);
+        color: var(--text-faint);
         font-size: 0.75rem;
-        font-weight: 650;
-      }
-
-      .input {
-        width: 100%;
-        padding: 0.6875rem 0.875rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        background: var(--surface);
-        color: var(--text);
-        font: inherit;
-        font-size: 0.9375rem;
-      }
-
-      .input:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-soft);
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
       }
 
       .methods {
@@ -389,16 +397,18 @@ export interface CheckoutDetails {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.0625rem;
-        padding: 0.75rem 0.875rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-2xl);
-        background: var(--surface);
+        gap: 0.125rem;
+        padding: 0.875rem 1.125rem;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
         color: var(--text);
         font: inherit;
         text-align: left;
         cursor: pointer;
-        transition: transform var(--press-dur) var(--press-ease);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          border-color var(--press-dur) var(--press-ease);
       }
 
       .method:active {
@@ -411,8 +421,8 @@ export interface CheckoutDetails {
       }
 
       .method__label {
-        font-size: 0.9375rem;
-        font-weight: 650;
+        font-size: 0.875rem;
+        font-weight: 700;
       }
 
       .method__hint {
@@ -430,51 +440,35 @@ export interface CheckoutDetails {
         line-height: 1.4;
       }
 
+      /* Total above the button rather than beside it, as the cart screen lays it out — the
+         figure gets a line of its own and the button gets the full width. */
       .actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
         width: 100%;
-        align-items: center;
       }
 
       .total {
         display: flex;
-        flex-direction: column;
+        align-items: baseline;
+        gap: 0.625rem;
       }
 
       .total__label {
-        color: var(--text-muted);
+        color: var(--text-faint);
         font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
       }
 
       .total__value {
-        font-size: 1.0625rem;
+        color: var(--text);
+        font-size: 1.5rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-      }
-
-      .submit {
-        flex: 1;
-        padding: 0.875rem 1rem;
-        border: 0;
-        border-radius: var(--radius-pill);
-        background: var(--accent);
-        color: var(--accent-contrast);
-        font: inherit;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 6px 16px -4px var(--accent-glow);
-        transition:
-          transform var(--press-dur) var(--press-ease),
-          background-color var(--press-dur) var(--press-ease);
-      }
-
-      .submit:active:not(:disabled) {
-        transform: scale(var(--press-scale));
-        background: var(--accent-hover);
-      }
-
-      .submit:disabled {
-        opacity: 0.55;
+        letter-spacing: -0.02em;
       }
     `,
   ],

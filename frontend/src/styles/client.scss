@@ -1,0 +1,209 @@
+/* The customer-facing design system.
+ *
+ * Values are taken from the "Food Delivery App (Community)" Figma file the customer screens are
+ * modelled on: Sen throughout, #FC6E2A as the single accent, near-black headings over mid-grey
+ * body copy, flat #F6F6F6 fields, and a dark navy used for the cart.
+ *
+ * It is scoped to the customer component hosts rather than :root on purpose. The admin
+ * dashboard is a different product with a different audience, and it keeps the original token
+ * set — nothing here reaches it. Overriding the existing token *names* is what lets the
+ * components inherit the new look without every rule being rewritten to a parallel vocabulary.
+ */
+
+app-menu-page,
+app-order-status-page,
+app-scan-prompt {
+  /* Figma's palette. --accent-soft is the tint behind the table pill and selected chips. */
+  --accent: #fc6e2a;
+  --accent-hover: #e2551a;
+  --accent-contrast: #ffffff;
+  --accent-soft: #fff0e6;
+  --accent-glow: rgb(252 110 42 / 35%);
+
+  --bg: #ffffff;
+  --surface: #ffffff;
+  /* Fields and inert chips. Flat, not tinted — the design leans on shape, not shading. */
+  --surface-2: #f6f6f6;
+  --surface-3: #ececec;
+  --border: #ededed;
+  --border-strong: #d6d6d6;
+
+  --text: #1e1d1d;
+  --text-muted: #676767;
+  --text-faint: #a0a5ba;
+
+  /* The cart screen's ground, and the dark chips that sit on it. */
+  --ink: #121223;
+  --ink-soft: #1e1f30;
+
+  /* Figma rounds fields to 10, cards and sheets to 20, and primary buttons to 12. */
+  --radius-sm: 10px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+
+  /* Cards sit on white, so their shadow is the only thing separating them from the page.
+     Wide, soft and barely there — a border would read as a wireframe. */
+  --shadow-sm: 0 2px 8px rgb(18 18 35 / 4%);
+  --shadow-md: 0 6px 20px rgb(18 18 35 / 6%);
+  --shadow-xl: 0 10px 30px rgb(18 18 35 / 7%);
+  --shadow-lg: 0 -4px 30px rgb(18 18 35 / 10%);
+
+  /* 24px gutter on Figma's 375 frame. */
+  --gutter: 1.5rem;
+
+  /* Height of a primary button and a field, both 62 in the file. */
+  --control-h: 3.875rem;
+
+  font-family: 'Sen', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+}
+
+/* Dark mode is not part of the Figma file, so rather than invent one the customer screens keep
+   their own palette above and only soften the page behind them. The admin dashboard's dark
+   theme is untouched. */
+:root[data-theme='dark'] {
+  app-menu-page,
+  app-order-status-page,
+  app-scan-prompt {
+    --bg: #121223;
+    --surface: #1c1c2e;
+    --surface-2: #232339;
+    --surface-3: #2c2c44;
+    --border: #2c2c44;
+    --border-strong: #3d3d57;
+
+    --text: #ffffff;
+    --text-muted: #a0a5ba;
+    --text-faint: #6b7089;
+
+    --accent-soft: #33241c;
+
+    /* Lifted off the page rather than equal to it: in light mode --ink is the dark thing on a
+       white page, so on a dark page it has to become the *raised* thing or the ink-filled
+       button and the basket block both disappear into the background. */
+    --ink: #2a2a40;
+    --ink-soft: #35354f;
+
+    --shadow-sm: 0 2px 8px rgb(0 0 0 / 35%);
+    --shadow-md: 0 6px 20px rgb(0 0 0 / 40%);
+    --shadow-xl: 0 10px 30px rgb(0 0 0 / 45%);
+    --shadow-lg: 0 -4px 30px rgb(0 0 0 / 50%);
+  }
+}
+
+/* Section heading + "See all" row, repeated down every customer screen. */
+.c-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.c-section__title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* The uppercase micro-label Figma puts above fields and totals. */
+.c-label {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The one primary button: full width, 62 tall, uppercase Sen Bold. */
+.c-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0.75rem 1.25rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform var(--press-dur) var(--press-ease),
+    background-color var(--press-dur) var(--press-ease);
+}
+
+.c-cta:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+  background: var(--accent-hover);
+}
+
+.c-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Flat grey field, no border — the fill is the affordance. */
+.c-field {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0.875rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.c-field::placeholder {
+  color: var(--text-faint);
+}
+
+.c-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+/* Round icon button: the back arrow, the close, the cart. */
+.c-round {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.8125rem;
+  height: 2.8125rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: transform var(--press-dur) var(--press-ease);
+}
+
+.c-round:active {
+  transform: scale(var(--press-scale));
+}
+
+.c-round--ink {
+  background: var(--ink);
+  color: #fff;
+}
+
+.c-round--accent {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 6px 16px -4px var(--accent-glow);
+}

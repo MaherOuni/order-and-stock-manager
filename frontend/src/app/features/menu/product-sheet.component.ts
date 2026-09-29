@@ -45,22 +45,28 @@ export interface ProductSelection {
         } @else {
           <div class="hero__fallback" aria-hidden="true">{{ product().name.charAt(0) }}</div>
         }
-
-        <!-- The scrim runs from transparent to the sheet's own surface colour, so the image
-             dissolves into the panel instead of ending on a hard edge. -->
-        <figcaption class="hero__scrim">
-          <span class="price">{{ product().price | money: currency() }}</span>
-        </figcaption>
       </figure>
 
       @if (product().description) {
         <p class="description">{{ product().description }}</p>
       }
 
+      <div class="meta">
+        <span class="price">{{ product().price | money: currency() }}</span>
+
+        <div class="stepper" role="group" aria-label="Quantity">
+          <button type="button" (click)="quantity.set(quantity() - 1)" [disabled]="quantity() <= 1">
+            &minus;
+          </button>
+          <span aria-live="polite">{{ quantity() }}</span>
+          <button type="button" (click)="quantity.set(quantity() + 1)">+</button>
+        </div>
+      </div>
+
       @if (recipe.loading()) {
         <p class="loading">Loading options…</p>
       } @else if (options().length > 0) {
-        <h3 class="section">Make it yours</h3>
+        <h3 class="c-label section">Make it yours</h3>
         <ul class="options">
           @for (option of options(); track option.ingredientId) {
             <li class="option">
@@ -83,9 +89,9 @@ export interface ProductSelection {
         </ul>
       }
 
-      <h3 class="section">Anything else?</h3>
+      <h3 class="c-label section">Anything else?</h3>
       <input
-        class="note"
+        class="c-field note"
         [value]="notes()"
         (input)="notes.set(text($event))"
         placeholder="Extra hot, no straw, little ice…"
@@ -93,59 +99,28 @@ export interface ProductSelection {
       />
 
       <div sheetActions class="actions">
-        <div class="stepper" role="group" aria-label="Quantity">
-          <button type="button" (click)="quantity.set(quantity() - 1)" [disabled]="quantity() <= 1">
-            &minus;
-          </button>
-          <span aria-live="polite">{{ quantity() }}</span>
-          <button type="button" (click)="quantity.set(quantity() + 1)">+</button>
-        </div>
-
-        <button type="button" class="add" (click)="confirm()">
-          Add · {{ total() | money: currency() }}
+        <button type="button" class="c-cta add" (click)="confirm()">
+          Add to basket · {{ total() | money: currency() }}
         </button>
       </div>
     </app-bottom-sheet>
   `,
   styles: [
     `
-      /* Full-bleed: the sheet body is padded, and the hero cancels that padding so the image
-         runs edge to edge the way a delivery app's product screen does. */
+      /* A rounded image block, inset from the sheet's edges the way the detail screen is
+         drawn — the picture is a card in the layout, not a full-bleed banner. */
       .hero {
-        position: relative;
-        margin: 0 -1.25rem 1rem;
-        aspect-ratio: 4 / 3;
+        margin: 0 0 1.25rem;
+        aspect-ratio: 16 / 10;
+        border-radius: var(--radius-lg);
         overflow: hidden;
-        background: var(--surface-3);
+        background: var(--surface-2);
       }
 
       .hero img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-      }
-
-      .hero__scrim {
-        position: absolute;
-        inset-inline: 0;
-        bottom: 0;
-        display: flex;
-        align-items: flex-end;
-        padding: 3rem 1.25rem 0.875rem;
-        background: linear-gradient(
-          to top,
-          var(--surface) 0%,
-          color-mix(in srgb, var(--surface) 70%, transparent) 45%,
-          transparent 100%
-        );
-      }
-
-      .price {
-        color: var(--text);
-        font-size: 1.5rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        font-variant-numeric: tabular-nums;
       }
 
       .hero__fallback {
@@ -161,14 +136,29 @@ export interface ProductSelection {
         margin: 0;
         color: var(--text-muted);
         font-size: 0.875rem;
-        line-height: 1.5;
+        line-height: 1.6;
+      }
+
+      /* Price and quantity share a line, the way the detail screen pairs the price with its
+         size selector — the two numbers the customer is deciding between, side by side. */
+      .meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.25rem;
+      }
+
+      .price {
+        color: var(--text);
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
       }
 
       .section {
-        margin: 1.25rem 0 0.5rem;
-        color: var(--text);
-        font-size: 0.875rem;
-        font-weight: 600;
+        margin: 1.75rem 0 0.75rem;
       }
 
       .loading {
@@ -194,28 +184,28 @@ export interface ProductSelection {
       }
 
       .option__name {
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
+        font-weight: 700;
         min-width: 0;
       }
 
+      /* Bare choices rather than a segmented track: the detail screen sets its size options as
+         separate round chips, with the chosen one filled solid. */
       .segmented {
         display: flex;
         flex: 0 0 auto;
-        gap: 0.125rem;
-        padding: 0.1875rem;
-        background: var(--surface-3);
-        border-radius: var(--radius-pill);
+        gap: 0.375rem;
       }
 
       .segment {
-        padding: 0.375rem 0.75rem;
+        padding: 0.4375rem 0.875rem;
         border: 0;
         border-radius: var(--radius-pill);
-        background: transparent;
+        background: var(--surface-2);
         color: var(--text-muted);
         font: inherit;
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 700;
         cursor: pointer;
         transition:
           background-color var(--press-dur) var(--press-ease),
@@ -228,58 +218,44 @@ export interface ProductSelection {
       }
 
       .segment--active {
-        background: var(--surface);
-        color: var(--accent);
-        font-weight: 600;
-        box-shadow: var(--shadow-sm);
-      }
-
-      .note {
-        width: 100%;
-        padding: 0.6875rem 0.875rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        background: var(--surface);
-        color: var(--text);
-        font: inherit;
-        font-size: 0.9375rem;
-      }
-
-      .note:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-soft);
+        background: var(--accent);
+        color: var(--accent-contrast);
       }
 
       .actions {
         width: 100%;
-        align-items: center;
       }
 
+      /* Circular −/+ either side of the count, as the cart draws it. */
       .stepper {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-pill);
+        gap: 0.75rem;
+        flex: 0 0 auto;
       }
 
       .stepper button {
+        display: grid;
+        place-items: center;
         width: 2.25rem;
         height: 2.25rem;
         border: 0;
         border-radius: 50%;
-        background: transparent;
-        color: var(--accent);
+        background: var(--surface-2);
+        color: var(--text);
         font: inherit;
-        font-size: 1.25rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        line-height: 1;
         cursor: pointer;
-        transition: transform var(--press-dur) var(--press-ease);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease);
       }
 
       .stepper button:active:not(:disabled) {
         transform: scale(var(--press-scale));
+        background: var(--surface-3);
       }
 
       .stepper button:disabled {
@@ -287,32 +263,15 @@ export interface ProductSelection {
       }
 
       .stepper span {
-        min-width: 1.5rem;
+        min-width: 1.25rem;
         text-align: center;
+        font-size: 1.0625rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
       }
 
       .add {
-        flex: 1;
-        padding: 0.875rem 1rem;
-        border: 0;
-        border-radius: var(--radius-pill);
-        background: var(--accent);
-        color: var(--accent-contrast);
-        font: inherit;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 6px 16px -4px var(--accent-glow);
-        transition:
-          transform var(--press-dur) var(--press-ease),
-          background-color var(--press-dur) var(--press-ease);
-      }
-
-      .add:active {
-        transform: scale(var(--press-scale));
-        background: var(--accent-hover);
+        letter-spacing: 0.03em;
       }
     `,
   ],
