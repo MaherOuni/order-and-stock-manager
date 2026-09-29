@@ -155,7 +155,10 @@ import { MoneyPipe } from '../../core/money.pipe';
         gap: 0.5rem;
         /* Pins the price row to the bottom, so tiles of unequal text still line up. */
         margin-top: auto;
-        padding: 0.625rem 0.375rem 0;
+        /* The top padding is the only thing separating the price row from the description
+           above it — the two boxes meet exactly — so it has to clear the card's own bottom
+           padding, or the row reads as stuck to the text. */
+        padding: 1rem 0.375rem 0;
       }
 
       .price {

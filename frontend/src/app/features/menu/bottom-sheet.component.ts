@@ -135,7 +135,9 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       .body {
         flex: 1;
         overflow-y: auto;
-        padding: 0 var(--gutter);
+        /* The bottom padding is what stops the last field sitting flush against the action
+           footer once the body is scrolled to the end — without it the two simply meet. */
+        padding: 0 var(--gutter) 1.25rem;
       }
 
       .foot:empty {
