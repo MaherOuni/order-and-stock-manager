@@ -44,17 +44,23 @@ import { CategoryDto } from '../../core/api.models';
         position: sticky;
         top: 0;
         z-index: 20;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
+        /* Glass, so the list visibly slides under the rail instead of hitting an opaque band. */
+        background: var(--glass);
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+        border-bottom: 1px solid var(--glass-border);
       }
 
       .tabs {
         display: flex;
         gap: 0.5rem;
         overflow-x: auto;
-        padding: 0.6rem var(--gutter);
+        padding: 0.625rem var(--gutter);
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
+        /* A tab dragged into view settles flush with the gutter rather than half-cut. */
+        scroll-snap-type: x proximity;
+        scroll-padding-inline: var(--gutter);
       }
 
       .tabs::-webkit-scrollbar {
@@ -63,23 +69,34 @@ import { CategoryDto } from '../../core/api.models';
 
       .tab {
         flex: 0 0 auto;
+        scroll-snap-align: start;
         padding: 0.5rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        background: var(--surface-2);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface);
         color: var(--text-muted);
         font: inherit;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 0.875rem;
         white-space: nowrap;
         cursor: pointer;
-        transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        transition:
+          background-color var(--press-dur) var(--press-ease),
+          color var(--press-dur) var(--press-ease),
+          border-color var(--press-dur) var(--press-ease),
+          transform var(--press-dur) var(--press-ease);
+      }
+
+      .tab:active {
+        transform: scale(var(--press-scale));
       }
 
       .tab--active {
         background: var(--accent);
-        border-color: var(--accent);
+        border-color: transparent;
         color: var(--accent-contrast);
+        font-weight: 600;
+        box-shadow: 0 4px 12px -2px var(--accent-glow);
       }
     `,
   ],

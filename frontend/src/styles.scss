@@ -8,22 +8,26 @@
 :root {
   color-scheme: light;
 
-  /* Warm neutrals rather than pure grey — a food ordering app reads friendlier for it. */
-  --bg: #f6f3ef;
+  /* Warm stone neutrals rather than pure grey — a food ordering app reads friendlier for it —
+     under cool slate text. The warm/cool pairing is what stops the whole thing looking muddy. */
+  --bg: #fafaf9;
   --surface: #ffffff;
-  --surface-2: #faf8f5;
-  --surface-3: #f1ece6;
-  --border: #e9e2d9;
-  --border-strong: #d9cfc2;
-  --text: #1c1917;
+  --surface-2: #f5f5f4;
+  --surface-3: #e7e5e4;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --text: #0f172a;
   --text-muted: #78716c;
   --text-faint: #a8a29e;
 
-  --accent: #c2410c;
-  --accent-hover: #9a3412;
+  --accent: #ea580c;
+  --accent-hover: #c2410c;
   --accent-contrast: #ffffff;
   /* Tint used for active nav, selected pills and focus grounds. */
-  --accent-soft: #fdece2;
+  --accent-soft: #ffedd5;
+  /* Coloured spill under accent buttons, so they read as lit rather than pasted on. Its own
+     token because dark mode needs a weaker one — a bright glow on a dark ground blooms. */
+  --accent-glow: rgb(234 88 12 / 45%);
 
   --success-surface: #dcfce7;
   --success-text: #166534;
@@ -37,12 +41,28 @@
   --radius-sm: 10px;
   --radius: 14px;
   --radius-lg: 20px;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
   --radius-pill: 999px;
 
   /* Soft and low-contrast: the references lean on elevation, not borders. */
   --shadow-sm: 0 1px 2px rgb(28 25 23 / 6%), 0 1px 3px rgb(28 25 23 / 4%);
   --shadow-md: 0 2px 4px rgb(28 25 23 / 5%), 0 8px 20px rgb(28 25 23 / 7%);
   --shadow-lg: 0 12px 40px rgb(28 25 23 / 14%);
+  /* Ambient rather than directional: a wide, very faint pool that lifts a card off the ground
+     without drawing an edge. Deliberately weaker than --shadow-md, which is a panel shadow. */
+  --shadow-xl: 0 20px 25px -5px rgb(28 25 23 / 5%), 0 8px 10px -6px rgb(28 25 23 / 5%);
+
+  /* Translucent panel over the page, for anything that floats: sticky chrome, the cart bar.
+     --glass-border is the hairline that keeps a blurred panel from bleeding into the content. */
+  --glass: rgb(255 255 255 / 80%);
+  --glass-border: rgb(231 229 228 / 60%);
+  --blur: 12px;
+
+  /* One press feel everywhere. The curve decelerates hard so a tap reads as physical. */
+  --press-scale: 0.95;
+  --press-dur: 200ms;
+  --press-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   --gutter: 1rem;
 }
@@ -64,6 +84,7 @@
   --accent-hover: #fdba74;
   --accent-contrast: #1a1206;
   --accent-soft: #35251a;
+  --accent-glow: rgb(251 146 60 / 30%);
 
   --success-surface: #14351f;
   --success-text: #86efac;
@@ -77,6 +98,12 @@
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
   --shadow-md: 0 2px 4px rgb(0 0 0 / 30%), 0 8px 20px rgb(0 0 0 / 35%);
   --shadow-lg: 0 12px 40px rgb(0 0 0 / 50%);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 45%), 0 8px 10px -6px rgb(0 0 0 / 40%);
+
+  /* Dark glass is the surface colour, not white: tinting a dark panel with white haze reads as
+     fog rather than glass. */
+  --glass: rgb(28 25 23 / 78%);
+  --glass-border: rgb(69 62 57 / 60%);
 }
 
 *,
@@ -132,5 +159,11 @@ img {
   * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Killing the transition alone would leave the press *snapping* between sizes, which is the
+     jolt the preference is asking us to avoid. Flattening the scale removes the movement. */
+  :root {
+    --press-scale: 1;
   }
 }

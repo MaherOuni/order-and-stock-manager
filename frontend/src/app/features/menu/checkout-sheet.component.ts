@@ -283,6 +283,11 @@ export interface CheckoutDetails {
         font: inherit;
         font-size: 1.0625rem;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .stepper button:active:not(:disabled) {
+        transform: scale(var(--press-scale));
       }
 
       .stepper span {
@@ -324,13 +329,18 @@ export interface CheckoutDetails {
         gap: 0.3125rem;
         padding: 0.75rem 0.25rem;
         border: 1px solid var(--border);
-        border-radius: var(--radius);
+        border-radius: var(--radius-2xl);
         background: var(--surface);
         color: var(--text-muted);
         font: inherit;
         font-size: 0.75rem;
         font-weight: 650;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .type:active {
+        transform: scale(var(--press-scale));
       }
 
       .type--active {
@@ -382,12 +392,17 @@ export interface CheckoutDetails {
         gap: 0.0625rem;
         padding: 0.75rem 0.875rem;
         border: 1px solid var(--border);
-        border-radius: var(--radius);
+        border-radius: var(--radius-2xl);
         background: var(--surface);
         color: var(--text);
         font: inherit;
         text-align: left;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .method:active {
+        transform: scale(var(--press-scale));
       }
 
       .method--active {
@@ -447,6 +462,15 @@ export interface CheckoutDetails {
         font-size: 0.9375rem;
         font-weight: 700;
         cursor: pointer;
+        box-shadow: 0 6px 16px -4px var(--accent-glow);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease);
+      }
+
+      .submit:active:not(:disabled) {
+        transform: scale(var(--press-scale));
+        background: var(--accent-hover);
       }
 
       .submit:disabled {

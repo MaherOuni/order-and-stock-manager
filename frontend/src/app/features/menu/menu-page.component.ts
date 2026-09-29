@@ -101,11 +101,13 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
     }
 
     @if (!cart.isEmpty() && !checkoutOpen()) {
-      <button type="button" class="bar" (click)="checkoutOpen.set(true)">
-        <span class="bar__count">{{ cart.itemCount() }}</span>
-        <span class="bar__text">View basket</span>
-        <span class="bar__total">{{ cart.totalPrice() | money: currency() }}</span>
-      </button>
+      <div class="bar">
+        <button type="button" class="bar__cta" (click)="checkoutOpen.set(true)">
+          <span class="bar__count">{{ cart.itemCount() }}</span>
+          <span class="bar__text">View basket</span>
+          <span class="bar__total">{{ cart.totalPrice() | money: currency() }}</span>
+        </button>
+      </div>
     }
 
     @if (selectedProduct(); as product) {
@@ -145,16 +147,23 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
   `,
   styles: [
     `
+      /* A phone-width column, centred. The menu is designed for the screen a QR code is
+         scanned with, and letting it stretch across a laptop strands the "+" a hand's width
+         from the dish it belongs to. Capping it keeps the intended proportions everywhere. */
       :host {
         display: block;
+        max-width: 30rem;
+        margin-inline: auto;
         min-height: 100dvh;
         background: var(--bg);
       }
 
       .header {
         padding: calc(env(safe-area-inset-top, 0) + 1.25rem) var(--gutter) 0.875rem;
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
+        background: var(--glass);
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+        border-bottom: 1px solid var(--glass-border);
       }
 
       .header__row {
@@ -169,20 +178,21 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
         align-items: center;
         gap: 0.3125rem;
         margin: 0;
-        padding: 0.1875rem 0.5625rem;
+        padding: 0.25rem 0.75rem;
         border-radius: var(--radius-pill);
         background: var(--accent-soft);
-        color: var(--accent);
+        color: var(--accent-hover);
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 500;
       }
 
       .header__name {
-        margin: 0.375rem 0 0;
-        font-size: 1.5rem;
+        margin: 0.4375rem 0 0;
+        color: var(--text);
+        font-size: 1.625rem;
         font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
       }
 
       .help {
@@ -196,26 +206,39 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
         color: var(--text-muted);
         font: inherit;
         font-size: 0.8125rem;
-        font-weight: 650;
+        font-weight: 500;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .help:active {
+        transform: scale(var(--press-scale));
       }
 
       .search {
         width: 100%;
         margin-top: 0.875rem;
-        padding: 0.6875rem 0.875rem;
-        border: 1px solid var(--border);
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--glass-border);
         border-radius: var(--radius-pill);
-        background: var(--surface-2);
+        background: var(--surface);
         color: var(--text);
         font: inherit;
         font-size: 0.9375rem;
+        box-shadow: var(--shadow-xl);
+        transition:
+          border-color var(--press-dur) var(--press-ease),
+          box-shadow var(--press-dur) var(--press-ease);
+      }
+
+      .search::placeholder {
+        color: var(--text-faint);
       }
 
       .search:focus {
         outline: none;
         border-color: var(--accent);
-        background: var(--surface);
+        box-shadow: 0 0 0 4px var(--accent-soft);
       }
 
       .list {
@@ -276,23 +299,58 @@ import { ProductSelection, ProductSheetComponent } from './product-sheet.compone
         cursor: pointer;
       }
 
+      /* A floating glass tray holding the CTA, rather than a bare button: the blur separates
+         the bar from whatever is scrolling behind it without needing an opaque block, and the
+         solid accent button inside keeps the call to action at full strength. */
       .bar {
         position: fixed;
+        /* Fixed positioning takes it out of the centred column, so it re-centres itself:
+           both insets set, a matching cap, and auto margins to split the remainder. */
         left: var(--gutter);
         right: var(--gutter);
+        max-width: calc(30rem - 2 * var(--gutter));
+        margin-inline: auto;
         bottom: calc(env(safe-area-inset-bottom, 0) + 0.875rem);
         z-index: 30;
+        /* Enough inset that the blur is legible as a tray; any tighter and it reads as a
+           stray outline around the button rather than a surface holding it. */
+        padding: 0.5rem;
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-3xl);
+        background: var(--glass);
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+        box-shadow: var(--shadow-lg);
+        animation: bar-in 260ms var(--press-ease);
+      }
+
+      @keyframes bar-in {
+        from {
+          transform: translateY(0.75rem);
+          opacity: 0;
+        }
+      }
+
+      .bar__cta {
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        width: 100%;
         padding: 0.8125rem 1rem;
         border: 0;
-        border-radius: var(--radius-pill);
+        border-radius: calc(var(--radius-3xl) - 0.5rem);
         background: var(--accent);
         color: var(--accent-contrast);
         font: inherit;
-        box-shadow: var(--shadow-lg);
         cursor: pointer;
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease);
+      }
+
+      .bar__cta:active {
+        transform: scale(var(--press-scale));
+        background: var(--accent-hover);
       }
 
       .bar__count {

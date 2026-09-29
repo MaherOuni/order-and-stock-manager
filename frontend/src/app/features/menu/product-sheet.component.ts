@@ -45,13 +45,17 @@ export interface ProductSelection {
         } @else {
           <div class="hero__fallback" aria-hidden="true">{{ product().name.charAt(0) }}</div>
         }
+
+        <!-- The scrim runs from transparent to the sheet's own surface colour, so the image
+             dissolves into the panel instead of ending on a hard edge. -->
+        <figcaption class="hero__scrim">
+          <span class="price">{{ product().price | money: currency() }}</span>
+        </figcaption>
       </figure>
 
       @if (product().description) {
         <p class="description">{{ product().description }}</p>
       }
-
-      <p class="price">{{ product().price | money: currency() }}</p>
 
       @if (recipe.loading()) {
         <p class="loading">Loading options…</p>
@@ -105,10 +109,12 @@ export interface ProductSelection {
   `,
   styles: [
     `
+      /* Full-bleed: the sheet body is padded, and the hero cancels that padding so the image
+         runs edge to edge the way a delivery app's product screen does. */
       .hero {
-        margin: 0 0 0.875rem;
-        aspect-ratio: 16 / 9;
-        border-radius: var(--radius);
+        position: relative;
+        margin: 0 -1.25rem 1rem;
+        aspect-ratio: 4 / 3;
         overflow: hidden;
         background: var(--surface-3);
       }
@@ -117,6 +123,29 @@ export interface ProductSelection {
         width: 100%;
         height: 100%;
         object-fit: cover;
+      }
+
+      .hero__scrim {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0;
+        display: flex;
+        align-items: flex-end;
+        padding: 3rem 1.25rem 0.875rem;
+        background: linear-gradient(
+          to top,
+          var(--surface) 0%,
+          color-mix(in srgb, var(--surface) 70%, transparent) 45%,
+          transparent 100%
+        );
+      }
+
+      .price {
+        color: var(--text);
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
       }
 
       .hero__fallback {
@@ -131,19 +160,15 @@ export interface ProductSelection {
       .description {
         margin: 0;
         color: var(--text-muted);
+        font-size: 0.875rem;
         line-height: 1.5;
-      }
-
-      .price {
-        margin: 0.5rem 0 0;
-        font-size: 1.25rem;
-        font-weight: 700;
       }
 
       .section {
         margin: 1.25rem 0 0.5rem;
+        color: var(--text);
         font-size: 0.875rem;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .loading {
@@ -183,20 +208,29 @@ export interface ProductSelection {
       }
 
       .segment {
-        padding: 0.3125rem 0.625rem;
+        padding: 0.375rem 0.75rem;
         border: 0;
         border-radius: var(--radius-pill);
         background: transparent;
         color: var(--text-muted);
         font: inherit;
         font-size: 0.75rem;
-        font-weight: 650;
+        font-weight: 500;
         cursor: pointer;
+        transition:
+          background-color var(--press-dur) var(--press-ease),
+          color var(--press-dur) var(--press-ease),
+          transform var(--press-dur) var(--press-ease);
+      }
+
+      .segment:active {
+        transform: scale(var(--press-scale));
       }
 
       .segment--active {
         background: var(--surface);
         color: var(--accent);
+        font-weight: 600;
         box-shadow: var(--shadow-sm);
       }
 
@@ -241,6 +275,11 @@ export interface ProductSelection {
         font: inherit;
         font-size: 1.25rem;
         cursor: pointer;
+        transition: transform var(--press-dur) var(--press-ease);
+      }
+
+      .stepper button:active:not(:disabled) {
+        transform: scale(var(--press-scale));
       }
 
       .stepper button:disabled {
@@ -265,6 +304,15 @@ export interface ProductSelection {
         font-size: 0.9375rem;
         font-weight: 700;
         cursor: pointer;
+        box-shadow: 0 6px 16px -4px var(--accent-glow);
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          background-color var(--press-dur) var(--press-ease);
+      }
+
+      .add:active {
+        transform: scale(var(--press-scale));
+        background: var(--accent-hover);
       }
     `,
   ],

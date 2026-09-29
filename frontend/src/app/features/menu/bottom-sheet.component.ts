@@ -50,8 +50,16 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       .backdrop {
         position: absolute;
         inset: 0;
-        background: rgb(28 25 23 / 45%);
-        backdrop-filter: blur(2px);
+        background: rgb(15 23 42 / 45%);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        animation: fade 0.22s var(--press-ease);
+      }
+
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
       }
 
       .sheet {
@@ -61,14 +69,14 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
         width: min(30rem, 100%);
         max-height: 92dvh;
         background: var(--surface);
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
         box-shadow: var(--shadow-lg);
-        animation: rise 0.22s ease-out;
+        animation: rise 0.28s var(--press-ease);
       }
 
       @keyframes rise {
         from {
-          transform: translateY(12px);
+          transform: translateY(1.5rem);
           opacity: 0.6;
         }
       }
@@ -79,7 +87,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
         }
 
         .sheet {
-          border-radius: var(--radius-lg);
+          border-radius: var(--radius-3xl);
           max-height: 88dvh;
         }
       }
@@ -110,9 +118,10 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 
       .title {
         margin: 0;
-        font-size: 1.125rem;
+        color: var(--text);
+        font-size: 1.25rem;
         font-weight: 700;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.02em;
       }
 
       .subtitle {

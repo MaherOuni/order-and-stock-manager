@@ -41,7 +41,7 @@ import { MoneyPipe } from '../../core/money.pipe';
           <span class="price">{{ product().price | money: currency() }}</span>
 
           @if (quantity() > 0) {
-            <span class="count">{{ quantity() }} in basket</span>
+            <span class="badge badge--count">{{ quantity() }} in basket</span>
           }
         </span>
       </span>
@@ -57,29 +57,38 @@ import { MoneyPipe } from '../../core/money.pipe';
 
       .card {
         display: grid;
-        grid-template-columns: 5rem 1fr auto;
+        grid-template-columns: 5.25rem 1fr auto;
         align-items: center;
         gap: 0.875rem;
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
+        /* Translucent hairline over an ambient pool: the card reads as floating on the page
+           rather than drawn onto it, which is the whole point of the treatment. */
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-3xl);
         background: var(--surface);
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow-xl);
         color: inherit;
         font: inherit;
         text-align: left;
         cursor: pointer;
+        transition:
+          transform var(--press-dur) var(--press-ease),
+          box-shadow var(--press-dur) var(--press-ease),
+          border-color var(--press-dur) var(--press-ease);
       }
 
       .card:active {
-        transform: scale(0.995);
+        transform: scale(var(--press-scale));
+        box-shadow: var(--shadow-sm);
       }
 
       .thumb {
-        width: 5rem;
-        height: 5rem;
-        border-radius: calc(var(--radius) - 4px);
+        width: 5.25rem;
+        height: 5.25rem;
+        /* Nested radius: the inner curve has to be tighter than the outer one by the padding,
+           or the corners read as two unrelated arcs. */
+        border-radius: calc(var(--radius-3xl) - 0.75rem);
         object-fit: cover;
         background: var(--surface-3);
       }
@@ -100,10 +109,14 @@ import { MoneyPipe } from '../../core/money.pipe';
         min-width: 0;
       }
 
+      /* The hierarchy the whole card hangs on: a near-black semibold title against a muted
+         stone description, so the eye lands on the dish name first at arm's length. */
       .name {
+        color: var(--text);
         font-size: 0.9375rem;
-        font-weight: 650;
+        font-weight: 600;
         line-height: 1.3;
+        letter-spacing: -0.01em;
       }
 
       .description {
@@ -118,20 +131,32 @@ import { MoneyPipe } from '../../core/money.pipe';
 
       .footer {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         gap: 0.5rem;
-        margin-top: 0.1875rem;
+        margin-top: 0.375rem;
       }
 
       .price {
+        color: var(--text);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
       }
 
-      .count {
-        color: var(--accent);
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-pill);
         font-size: 0.75rem;
-        font-weight: 650;
+        font-weight: 500;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+
+      .badge--count {
+        background: var(--accent-soft);
+        color: var(--accent-hover);
       }
 
       .add {
@@ -145,6 +170,7 @@ import { MoneyPipe } from '../../core/money.pipe';
         font-size: 1.25rem;
         font-weight: 600;
         line-height: 1;
+        box-shadow: 0 4px 12px -2px var(--accent-glow);
       }
     `,
   ],
