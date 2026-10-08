@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,11 @@ public sealed class TenantMiddlewareOptions
     {
         "/swagger",
         "/health",
-        "/api/v1/tenants"
+        "/api/v1/tenants",
+        // Sign-in is where a session begins: the caller has no token yet, so there is no tenant
+        // claim to read and no header they could legitimately send. The tenant comes from the
+        // account once the password checks out.
+        "/api/v1/auth"
     };
 
     /// <summary>
@@ -78,6 +83,44 @@ public sealed class TenantMiddleware
             return;
         }
 
+        // An authenticated caller's tenant comes from their token and nowhere else.
+        //
+        // Before authentication existed, X-Tenant-Id both *selected* and *authorised* a tenant:
+        // sending another restaurant's slug was enough to read and rewrite its menu. The header
+        // is now only allowed to agree with the token; disagreeing is a 403, not a switch.
+        if (TokenTenantId(context) is { } claimedTenantId)
+        {
+            var authorised = await tenantLookup.FindByIdAsync(claimedTenantId, context.RequestAborted);
+
+            if (authorised is null)
+            {
+                // The token is validly signed but names a tenant that no longer exists.
+                _logger.LogWarning("Token names unknown tenant {TenantId}.", claimedTenantId);
+
+                await WriteProblemAsync(context, StatusCodes.Status403Forbidden,
+                    "Tenant not available",
+                    "Your account's restaurant no longer exists. Sign in again.");
+                return;
+            }
+
+            var (requested, _) = ExtractTenantKey(context);
+
+            if (!string.IsNullOrWhiteSpace(requested) && !Matches(authorised, requested))
+            {
+                _logger.LogWarning(
+                    "Rejected cross-tenant request: token {TokenTenant}, header '{Requested}'.",
+                    authorised.Id, requested);
+
+                await WriteProblemAsync(context, StatusCodes.Status403Forbidden,
+                    "Tenant mismatch",
+                    "That restaurant is not the one your account belongs to.");
+                return;
+            }
+
+            await ContinueWithTenantAsync(context, currentTenant, authorised);
+            return;
+        }
+
         var (rawValue, source) = ExtractTenantKey(context);
 
         if (string.IsNullOrWhiteSpace(rawValue))
@@ -109,6 +152,14 @@ public sealed class TenantMiddleware
             return;
         }
 
+        await ContinueWithTenantAsync(context, currentTenant, identity);
+    }
+
+    private async Task ContinueWithTenantAsync(
+        HttpContext context,
+        ICurrentTenant currentTenant,
+        TenantIdentity identity)
+    {
         currentTenant.Set(identity.Id, identity.Slug);
 
         // Echoed back so clients (and logs) can confirm which tenant served the request.
@@ -125,6 +176,22 @@ public sealed class TenantMiddleware
             await _next(context);
         }
     }
+
+    /// <summary>The tenant asserted by a validated bearer token, or null when anonymous.</summary>
+    private static Guid? TokenTenantId(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated != true) return null;
+
+        var raw = context.User.FindFirst(AppClaims.TenantId)?.Value;
+
+        return Guid.TryParse(raw, out var id) && id != Guid.Empty ? id : null;
+    }
+
+    /// <summary>Whether a header value names the same tenant the token already authorised.</summary>
+    private static bool Matches(TenantIdentity authorised, string requested)
+        => Guid.TryParse(requested, out var asId)
+            ? asId == authorised.Id
+            : string.Equals(requested, authorised.Slug, StringComparison.OrdinalIgnoreCase);
 
     private bool IsBypassed(PathString path)
         => _options.BypassPathPrefixes.Any(prefix =>

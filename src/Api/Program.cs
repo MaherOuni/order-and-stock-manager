@@ -4,6 +4,7 @@ using Api.Swagger;
 using Application;
 using Application.Features.Inventory;
 using Infrastructure;
+using Infrastructure.Identity;
 using Infrastructure.Multitenancy;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -20,6 +21,7 @@ var builder = WebApplication.CreateBuilder(hostArgs);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAppAuthentication(builder.Configuration);
 
 builder.Services
     .AddControllers()
@@ -97,8 +99,14 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseCors(AngularCors);
 
+// Authentication first, because tenant resolution reads the tenant claim off the validated
+// principal and treats it as authoritative over the X-Tenant-Id header.
+app.UseAuthentication();
+
 // Must sit before the endpoints: everything downstream queries through the tenant filter.
 app.UseTenantResolution();
+
+app.UseAuthorization();
 
 app.MapControllers();
 // Three probes, because Kubernetes asks two different questions.

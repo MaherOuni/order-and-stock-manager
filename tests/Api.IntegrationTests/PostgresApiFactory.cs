@@ -31,6 +31,12 @@ public sealed class PostgresApiFactory : WebApplicationFactory<Program>, IAsyncL
         // The fixture owns schema creation; the app must not race it on start-up.
         builder.UseSetting("Database:MigrateOnStartup", "false");
         builder.UseSetting("Database:SeedDemoTenant", "false");
+
+        // "Testing" does not load appsettings.Development.json, and the API refuses to start
+        // without a signing key — which is the point of that check. Supply a throwaway one.
+        builder.UseSetting("Jwt:Issuer", "orderstock-tests");
+        builder.UseSetting("Jwt:Audience", "orderstock-tests");
+        builder.UseSetting("Jwt:Key", "integration-test-signing-key-at-least-32-chars");
     }
 
     async Task IAsyncLifetime.InitializeAsync()

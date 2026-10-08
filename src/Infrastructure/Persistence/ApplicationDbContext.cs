@@ -3,12 +3,22 @@ using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Common;
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+/// <summary>
+/// Identity lives in this context rather than a second one so that staff accounts, refresh
+/// tokens and restaurant data share a single connection, a single migration history and a
+/// single transaction when they need one.
+///
+/// None of the Identity tables are <see cref="ITenantEntity"/>, so the global tenant filter
+/// does not touch them — sign-in has to find a user before a tenant is known.
+/// </summary>
+public class ApplicationDbContext : IdentityDbContext<AppUser, AppRole, Guid>, IApplicationDbContext
 {
     private readonly ICurrentTenant _currentTenant;
 
@@ -34,6 +44,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<OrderItemCustomization> OrderItemCustomizations => Set<OrderItemCustomization>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
     public DbSet<OrderReview> OrderReviews => Set<OrderReview>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public bool HasActiveTransaction => Database.CurrentTransaction is not null;
 
@@ -76,11 +88,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Identity's own model first, so our configurations can refine it rather than race it.
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         ApplyTenantQueryFilters(modelBuilder);
-
-        base.OnModelCreating(modelBuilder);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
