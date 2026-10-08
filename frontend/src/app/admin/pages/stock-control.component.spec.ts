@@ -6,6 +6,7 @@ import { provideRouter, withComponentInputBinding, withRouterConfig } from '@ang
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { routes } from '../../app.routes';
+import { signInForTests, signOutForTests } from '../../core/auth/auth.testing';
 import { environment } from '../../../environments/environment';
 import { AdminShellComponent } from '../admin-shell.component';
 import { IngredientDto } from '../data/admin.models';
@@ -35,6 +36,9 @@ describe('StockControlComponent', () => {
   let harness: RouterTestingHarness;
 
   beforeEach(async () => {
+    // The admin guard redirects to /login without a session.
+    signInForTests();
+
     TestBed.configureTestingModule({
       providers: [
         provideRouter(
@@ -115,6 +119,9 @@ describe('StockControlComponent', () => {
 
     return match;
   }
+
+  // Otherwise one suite's session would sign the next one in.
+  afterEach(() => signOutForTests());
 
   it('flags every ingredient at or below its alert threshold', () => {
     flushIngredients([COFFEE, MILK]);

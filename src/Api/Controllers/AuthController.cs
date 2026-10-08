@@ -25,6 +25,7 @@ public sealed record AuthResponse(
     string RefreshToken,
     DateTimeOffset RefreshTokenExpiresAt,
     Guid TenantId,
+    string TenantSlug,
     string DisplayName,
     IReadOnlyList<string> Roles);
 
@@ -123,6 +124,7 @@ public sealed class AuthController : ControllerBase
         issue.Tokens.RefreshToken,
         issue.Tokens.RefreshTokenExpiresAt,
         issue.TenantId,
+        issue.TenantSlug,
         issue.DisplayName,
         issue.Roles);
 

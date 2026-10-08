@@ -54,7 +54,7 @@ const DEMO_GROUPS: readonly DemoGroup[] = [
   },
   {
     title: 'Run the restaurant',
-    hint: 'The manager dashboard, at /admin.',
+    hint: 'Staff only — these ask you to sign in first, with the credentials already filled in.',
     links: [
       {
         title: 'Overview',

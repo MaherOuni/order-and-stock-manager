@@ -89,6 +89,14 @@ class ApiError extends Error {
 }
 
 const ROUTES: Route[] = [
+  // Demo sign-in. The real API checks a password hash and signs a JWT; there is nothing to
+  // secure here, so this accepts the published demo credentials and hands back a fake token.
+  // It exists so the demo exercises the same guard, interceptor and sign-out as production
+  // rather than quietly skipping the part where staff have to log in.
+  { method: 'POST', path: '/api/v1/auth/login', handle: (c) => signIn(c.body) },
+  { method: 'POST', path: '/api/v1/auth/refresh', handle: (c) => refreshSession(c.body) },
+  { method: 'POST', path: '/api/v1/auth/logout', handle: () => null },
+
   { method: 'GET', path: '/api/v1/tenants/by-slug/{slug}', handle: (c) => tenantFor(c.params['slug']) },
 
   { method: 'GET', path: '/api/v1/categories', handle: () => categoriesWithCounts() },
@@ -132,6 +140,44 @@ const ROUTES: Route[] = [
   { method: 'GET', path: '/api/v1/floor-plan', handle: () => floorPlan() },
   { method: 'PUT', path: '/api/v1/floor-plan', handle: (c) => saveFloorPlan(c.body) },
 ];
+
+/** The one account the demo knows about. Published on the sign-in screen itself. */
+const DEMO_EMAIL = 'owner@demo-resto.test';
+const DEMO_PASSWORD = 'demo-owner-password';
+
+function demoSession() {
+  const hour = 60 * 60 * 1000;
+
+  return {
+    // Not a JWT and not signed. Nothing in demo mode validates it; it only has to be a
+    // non-empty string so the interceptor sends an Authorization header like the real app.
+    accessToken: `demo-access-${Date.now()}`,
+    accessTokenExpiresAt: new Date(Date.now() + hour).toISOString(),
+    refreshToken: `demo-refresh-${Date.now()}`,
+    refreshTokenExpiresAt: new Date(Date.now() + 14 * 24 * hour).toISOString(),
+    tenantId: state.tenant.id,
+    tenantSlug: state.tenant.slug,
+    displayName: 'Demo Owner',
+    roles: ['Owner'],
+  };
+}
+
+function signIn(body: any) {
+  const email = String(body?.email ?? '').trim().toLowerCase();
+  const password = String(body?.password ?? '');
+
+  if (email !== DEMO_EMAIL || password !== DEMO_PASSWORD)
+    throw new ApiError(401, 'Sign-in failed', 'Those credentials did not match an active account.');
+
+  return demoSession();
+}
+
+function refreshSession(body: any) {
+  if (!body?.refreshToken)
+    throw new ApiError(401, 'Sign-in failed', 'That session has expired.');
+
+  return demoSession();
+}
 
 function floorPlan() {
   // A restaurant that has never drawn one is a normal state, not an error — but the route has

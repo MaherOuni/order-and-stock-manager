@@ -20,7 +20,13 @@ public sealed record TokenPair(
 /// The tokens plus who they were issued to. Refresh runs anonymously — there is no principal
 /// on the request to read the user from — so the service has to say which account it rotated.
 /// </summary>
-public sealed record TokenIssue(TokenPair Tokens, Guid UserId, Guid TenantId, string DisplayName, IReadOnlyList<string> Roles);
+public sealed record TokenIssue(
+    TokenPair Tokens,
+    Guid UserId,
+    Guid TenantId,
+    string TenantSlug,
+    string DisplayName,
+    IReadOnlyList<string> Roles);
 
 public interface ITokenService
 {
@@ -109,6 +115,7 @@ public sealed class TokenService : ITokenService
             new TokenPair(access, expiresAt, refresh, refreshExpires),
             user.Id,
             user.TenantId,
+            slug,
             user.DisplayName,
             roles.ToList());
     }

@@ -6,6 +6,7 @@ import { provideRouter, withComponentInputBinding, withRouterConfig } from '@ang
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { routes } from '../../app.routes';
+import { signInForTests, signOutForTests } from '../../core/auth/auth.testing';
 import { environment } from '../../../environments/environment';
 import { OrderDto } from '../../core/api.models';
 import { AdminShellComponent } from '../admin-shell.component';
@@ -52,6 +53,9 @@ describe('OrderListComponent', () => {
   let harness: RouterTestingHarness;
 
   beforeEach(async () => {
+    // The admin guard redirects to /login without a session.
+    signInForTests();
+
     TestBed.configureTestingModule({
       providers: [
         provideRouter(
@@ -133,6 +137,9 @@ describe('OrderListComponent', () => {
 
     return match;
   }
+
+  // Otherwise one suite's session would sign the next one in.
+  afterEach(() => signOutForTests());
 
   it('lists incoming orders with their table numbers and contents', () => {
     flushOrders([order(), order({ id: 'o-2', tableNumber: 'T4', status: 'Completed' })]);

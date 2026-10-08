@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NEVER } from 'rxjs';
 
+import { AuthService } from '../core/auth/auth.service';
 import { loadResource } from '../core/load-state';
 import { IconComponent } from '../shared/icon.component';
 import { ThemeToggleComponent } from '../shared/theme-toggle.component';
@@ -85,6 +86,11 @@ const NAV: readonly NavItem[] = [
           <div class="store">
             <span class="store__name">{{ tenantName() }}</span>
             <span class="a-badge a-badge--success">Open</span>
+          </div>
+
+          <div class="who">
+            <span class="who__name">{{ auth.displayName() }}</span>
+            <button type="button" class="who__out" (click)="signOut()">Sign out</button>
           </div>
 
           <app-theme-toggle />
@@ -244,6 +250,43 @@ const NAV: readonly NavItem[] = [
         font-weight: 650;
       }
 
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+        font-size: 0.8125rem;
+      }
+
+      .who__name {
+        color: var(--text-muted);
+        font-weight: 650;
+        /* The name is context, not a control; it goes first to lose on a narrow screen. */
+        display: none;
+      }
+
+      .who__out {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        background: var(--surface);
+        color: var(--text-muted);
+        font: inherit;
+        font-size: 0.75rem;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      .who__out:hover {
+        color: var(--text);
+      }
+
+      @media (min-width: 40rem) {
+        .who__name {
+          display: inline;
+        }
+      }
+
       @media (min-width: 60rem) {
         .shell {
           flex-direction: row;
@@ -353,8 +396,15 @@ export class AdminShellComponent {
   readonly tenantSlug = input.required<string>();
 
   protected readonly nav = NAV;
+  protected readonly auth = inject(AuthService);
 
+  private readonly router = inject(Router);
   private readonly api = inject(AdminApiService);
+
+  protected signOut(): void {
+    this.auth.logout();
+    void this.router.navigate(['/login']);
+  }
 
   private readonly tenant = loadResource(this.tenantSlug, (slug) => this.api.getTenant(slug));
 

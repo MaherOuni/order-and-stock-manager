@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { adminGuard } from './core/auth/auth.guard';
+
 /**
  * Both customer routes carry their whole context in the URL, because that URL *is* the QR
  * code printed on the table — there is no session to fall back on. `withComponentInputBinding`
@@ -7,9 +9,24 @@ import { Routes } from '@angular/router';
  */
 export const routes: Routes = [
   {
+    // Before the admin route, and before the customer ones: a literal path that must not be
+    // mistaken for a tenant slug.
+    path: 'login',
+    title: 'Staff sign-in',
+    loadComponent: () =>
+      import('./features/auth/login-page.component').then((m) => m.LoginPageComponent),
+  },
+  {
+    path: 'no-access',
+    title: 'Not your restaurant',
+    loadComponent: () =>
+      import('./features/auth/no-access-page.component').then((m) => m.NoAccessPageComponent),
+  },
+  {
     // Ahead of the customer routes: /admin/... has a literal first segment, and reading the
     // routing table top-down should make that obvious.
     path: 'admin/:tenantSlug',
+    canActivate: [adminGuard],
     loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES),
   },
   {

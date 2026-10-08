@@ -6,6 +6,7 @@ import { provideRouter, withComponentInputBinding, withRouterConfig } from '@ang
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { routes } from '../../app.routes';
+import { signInForTests, signOutForTests } from '../../core/auth/auth.testing';
 import { environment } from '../../../environments/environment';
 import { ProductDto } from '../../core/api.models';
 import { AdminShellComponent } from '../admin-shell.component';
@@ -48,6 +49,9 @@ describe('InventoryManagerComponent', () => {
   let harness: RouterTestingHarness;
 
   beforeEach(async () => {
+    // The admin guard redirects to /login without a session.
+    signInForTests();
+
     TestBed.configureTestingModule({
       providers: [
         provideRouter(
@@ -137,6 +141,9 @@ describe('InventoryManagerComponent', () => {
     input.dispatchEvent(new Event('input'));
     harness.detectChanges();
   }
+
+  // Otherwise one suite's session would sign the next one in.
+  afterEach(() => signOutForTests());
 
   it('lists ingredients and the products whose recipes consume them', () => {
     expect(el().textContent).toContain('Coffee beans');

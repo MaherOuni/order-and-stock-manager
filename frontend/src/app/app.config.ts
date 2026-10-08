@@ -9,6 +9,7 @@ import {
 } from '@angular/router';
 
 import { routes } from './app.routes';
+import { authInterceptor } from './core/auth/auth.interceptor';
 import { demoBackendInterceptor } from './demo/demo.interceptor';
 import { DemoTitleStrategy } from './demo/demo-title.strategy';
 
@@ -28,7 +29,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       // A no-op unless DEMO_MODE is set; see demo/demo.interceptor.ts.
-      withInterceptors([demoBackendInterceptor]),
+      // Order matters. authInterceptor runs first so the Authorization header is on the
+      // request before the demo backend sees it; demoBackendInterceptor is last because it
+      // answers rather than forwarding, and nothing after it would run.
+      withInterceptors([authInterceptor, demoBackendInterceptor]),
     ),
     // Prefixes every tab title with "Demo ·" under DEMO_MODE; the default strategy otherwise.
     { provide: TitleStrategy, useClass: DemoTitleStrategy },
