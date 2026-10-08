@@ -5,6 +5,8 @@ obj/
 *.suo
 .vs/
 artifacts/
+# `dotnet test --logger trx` drops results here; CI uploads them as an artifact instead.
+TestResults/
 
 ## Rider / VS Code
 .idea/

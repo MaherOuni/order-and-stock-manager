@@ -117,10 +117,10 @@ public sealed class TenantMiddleware
         context.Items["TenantSlug"] = identity.Slug;
 
         using (_logger.BeginScope(new Dictionary<string, object>
-               {
-                   ["TenantId"] = identity.Id,
-                   ["TenantSlug"] = identity.Slug
-               }))
+        {
+            ["TenantId"] = identity.Id,
+            ["TenantSlug"] = identity.Slug
+        }))
         {
             await _next(context);
         }
