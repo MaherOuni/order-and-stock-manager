@@ -1,4 +1,6 @@
 using Application.Features.Recipes;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -9,6 +11,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/products/{productId:guid}/recipe")]
+[Authorize(Policy = AuthPolicies.ManageRestaurant)]
 [Produces("application/json")]
 public sealed class RecipesController : ControllerBase
 {
@@ -25,6 +28,21 @@ public sealed class RecipesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductRecipeDto>> Get(Guid productId, CancellationToken ct)
         => Ok(await _recipes.GetForProductAsync(productId, ct));
+
+    /// <summary>
+    /// The ingredients a customer may leave out or double, for the product sheet.
+    /// </summary>
+    /// <remarks>
+    /// Public, and deliberately a thinner shape than the recipe above: quantities, stock levels
+    /// and producible units are the restaurant's business, not the table's.
+    /// </remarks>
+    [AllowAnonymous]
+    [HttpGet("~/api/v1/products/{productId:guid}/customizations")]
+    [ProducesResponseType(typeof(ProductCustomizationsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductCustomizationsDto>> GetCustomizations(
+        Guid productId, CancellationToken ct)
+        => Ok(await _recipes.GetCustomizationsAsync(productId, ct));
 
     /// <summary>
     /// Maps a set of ingredients and their required quantities to the product.

@@ -1,10 +1,13 @@
 using Application.Features.Categories;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/v1/categories")]
+[Authorize(Policy = AuthPolicies.ManageRestaurant)]
 [Produces("application/json")]
 public sealed class CategoriesController : ControllerBase
 {
@@ -13,10 +16,12 @@ public sealed class CategoriesController : ControllerBase
     public CategoriesController(ICategoryService categories) => _categories = categories;
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<CategoryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetAll(CancellationToken ct)
         => Ok(await _categories.GetAllAsync(ct));
 
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CategoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

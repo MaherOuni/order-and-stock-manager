@@ -9,6 +9,12 @@ public interface IRecipeService
 {
     Task<ProductRecipeDto> GetForProductAsync(Guid productId, CancellationToken ct = default);
 
+    /// <summary>
+    /// The ingredient names a customer may change, and nothing else. Separate from
+    /// <see cref="GetForProductAsync"/> because that one is staff-only.
+    /// </summary>
+    Task<ProductCustomizationsDto> GetCustomizationsAsync(Guid productId, CancellationToken ct = default);
+
     /// <summary>Maps a whole set of ingredients to a product, replacing any previous recipe.</summary>
     Task<ProductRecipeDto> ReplaceRecipeAsync(Guid productId, SetRecipeRequest request, CancellationToken ct = default);
 
@@ -45,6 +51,24 @@ public sealed class RecipeService : IRecipeService
             .ToList();
 
         return new ProductRecipeDto(product.Id, product.Name, items, MaxProducible(rows));
+    }
+
+    public async Task<ProductCustomizationsDto> GetCustomizationsAsync(
+        Guid productId, CancellationToken ct = default)
+    {
+        var product = await _db.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == productId, ct)
+                      ?? throw new NotFoundException(nameof(Product), productId);
+
+        // Projected in the query rather than mapped from the full row, so quantities and stock
+        // are never even loaded on a request that must not reveal them.
+        var items = await _db.RecipeItems
+            .AsNoTracking()
+            .Where(r => r.ProductId == productId)
+            .OrderBy(r => r.Ingredient!.Name)
+            .Select(r => new CustomizationOptionDto(r.IngredientId, r.Ingredient!.Name))
+            .ToListAsync(ct);
+
+        return new ProductCustomizationsDto(product.Id, product.Name, items);
     }
 
     public async Task<ProductRecipeDto> ReplaceRecipeAsync(

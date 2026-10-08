@@ -1,4 +1,6 @@
 using Application.Features.Inventory;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -9,6 +11,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/stock")]
+[Authorize(Policy = AuthPolicies.StaffMember)]
 [Produces("application/json")]
 public sealed class StockController : ControllerBase
 {
@@ -61,6 +64,7 @@ public sealed class StockController : ControllerBase
     /// Stock is insufficient. Nothing was deducted; the problem document's <c>shortages</c>
     /// extension lists what is missing.
     /// </response>
+    [Authorize(Policy = AuthPolicies.ManageRestaurant)]
     [HttpPost("deduct")]
     [ProducesResponseType(typeof(StockDeductionResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

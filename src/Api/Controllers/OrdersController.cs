@@ -2,6 +2,8 @@ using Application.Features.CustomerCare;
 using Application.Features.Inventory;
 using Application.Features.Orders;
 using Domain.Enums;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -12,6 +14,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/orders")]
+[Authorize(Policy = AuthPolicies.StaffMember)]
 [Produces("application/json")]
 public sealed class OrdersController : ControllerBase
 {
@@ -63,6 +66,7 @@ public sealed class OrdersController : ControllerBase
     /// fell short, by how much, and which products it blocks.
     /// </response>
     /// <response code="404">The slug matches no restaurant, or a product is not on its menu.</response>
+    [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -149,6 +153,7 @@ public sealed class OrdersController : ControllerBase
     /// <param name="tenantSlug">Stands in for the tenant header, for a customer's phone.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <response code="422">The order is already served or already cancelled.</response>
+    [AllowAnonymous]
     [HttpPost("{id:guid}/cancel")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -164,6 +169,7 @@ public sealed class OrdersController : ControllerBase
     /// <summary>Leaves a rating for an order, or edits the one already left.</summary>
     /// <remarks>Public: the body names the restaurant by slug, as placing the order did.</remarks>
     /// <response code="422">The rating is outside 1–5.</response>
+    [AllowAnonymous]
     [HttpPost("{id:guid}/review")]
     [ProducesResponseType(typeof(OrderReviewDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -174,6 +180,7 @@ public sealed class OrdersController : ControllerBase
         => Ok(await _reviews.SubmitAsync(id, command, ct));
 
     /// <summary>The review left for an order, if there is one.</summary>
+    [AllowAnonymous]
     [HttpGet("{id:guid}/review")]
     [ProducesResponseType(typeof(OrderReviewDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -192,6 +199,7 @@ public sealed class OrdersController : ControllerBase
     /// <c>Location</c> they were given.
     /// </param>
     /// <param name="ct">Cancellation token.</param>
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -100,6 +100,12 @@ const ROUTES: Route[] = [
   { method: 'DELETE', path: '/api/v1/products/{id}', handle: (c) => deleteProduct(c.params['id']) },
 
   { method: 'GET', path: '/api/v1/products/{id}/recipe', handle: (c) => recipeFor(c.params['id']) },
+  // The customer-facing projection: ingredient names only, no quantities or stock.
+  {
+    method: 'GET',
+    path: '/api/v1/products/{id}/customizations',
+    handle: (c) => customizationsFor(c.params['id']),
+  },
   { method: 'POST', path: '/api/v1/products/{id}/recipe', handle: (c) => setRecipe(c.params['id'], c.body) },
 
   { method: 'GET', path: '/api/v1/ingredients', handle: (c) => listIngredients(c.query) },
@@ -343,6 +349,27 @@ function deleteProduct(id: string): null {
 }
 
 // --------------------------------------------------------------------------- recipes --
+
+/**
+ * What the customer menu asks for. Mirrors the real API's split: this shape carries ingredient
+ * names only, while {@link recipeFor} carries quantities and stock and is staff-only.
+ */
+function customizationsFor(productId: string) {
+  const product = requireProduct(productId);
+
+  return {
+    productId: product.id,
+    productName: product.name,
+    items: state.recipes
+      .filter((r) => r.productId === productId)
+      .map((line) => {
+        const ingredient = requireIngredient(line.ingredientId);
+
+        return { ingredientId: ingredient.id, ingredientName: ingredient.name };
+      })
+      .sort((a, b) => a.ingredientName.localeCompare(b.ingredientName)),
+  };
+}
 
 function recipeFor(productId: string) {
   const product = requireProduct(productId);

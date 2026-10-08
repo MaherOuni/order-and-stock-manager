@@ -19,6 +19,12 @@ public sealed class AppRole : IdentityRole<Guid>
 /// </summary>
 public static class AppRoles
 {
+    /// <summary>
+    /// Us, not a customer. Provisions restaurants and can see across all of them, which is why
+    /// it is deliberately not grantable through any tenant-facing screen.
+    /// </summary>
+    public const string PlatformAdmin = "PlatformAdmin";
+
     /// <summary>Owns the business: billing, staff accounts, tenant settings.</summary>
     public const string Owner = "Owner";
 
@@ -28,5 +34,8 @@ public static class AppRoles
     /// <summary>Works the floor: the order board, the service desk, stock adjustments.</summary>
     public const string Staff = "Staff";
 
-    public static readonly IReadOnlyList<string> All = new[] { Owner, Manager, Staff };
+    /// <summary>The roles a restaurant can hand out. PlatformAdmin is not among them.</summary>
+    public static readonly IReadOnlyList<string> TenantRoles = new[] { Owner, Manager, Staff };
+
+    public static readonly IReadOnlyList<string> All = new[] { PlatformAdmin, Owner, Manager, Staff };
 }

@@ -1,5 +1,7 @@
 using Application.Features.Ingredients;
 using Application.Features.Inventory;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -10,6 +12,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/ingredients")]
+[Authorize(Policy = AuthPolicies.ManageRestaurant)]
 [Produces("application/json")]
 public sealed class IngredientsController : ControllerBase
 {
@@ -24,6 +27,7 @@ public sealed class IngredientsController : ControllerBase
 
     /// <summary>Lists the tenant's ingredients.</summary>
     /// <param name="lowStockOnly">Only ingredients at or below their minimum stock alert.</param>
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<IngredientDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<IngredientDto>>> GetAll(
@@ -32,6 +36,7 @@ public sealed class IngredientsController : ControllerBase
         => Ok(await _ingredients.GetAllAsync(lowStockOnly, ct));
 
     /// <summary>Gets a single ingredient.</summary>
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(IngredientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -65,6 +70,7 @@ public sealed class IngredientsController : ControllerBase
     /// delivery, <c>-0.75</c> for waste. Writes one ledger line and never lets stock go negative.
     /// </summary>
     /// <response code="409">The subtraction would take stock below zero.</response>
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpPost("{id:guid}/adjust")]
     [ProducesResponseType(typeof(StockMovementResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -78,6 +84,7 @@ public sealed class IngredientsController : ControllerBase
     /// Sets stock to a counted figure after a physical inventory. The delta is derived and
     /// logged as an InventoryCount movement.
     /// </summary>
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpPost("{id:guid}/recount")]
     [ProducesResponseType(typeof(StockMovementResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -86,6 +93,7 @@ public sealed class IngredientsController : ControllerBase
         => Ok(await _stock.RecountAsync(id, request, ct));
 
     /// <summary>This ingredient's stock movements, newest first.</summary>
+    [Authorize(Policy = AuthPolicies.StaffMember)]
     [HttpGet("{id:guid}/stock-logs")]
     [ProducesResponseType(typeof(IReadOnlyList<StockLogDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<StockLogDto>>> GetLogs(

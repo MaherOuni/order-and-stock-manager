@@ -77,6 +77,9 @@ if (runMigrations)
     if (seedDemoTenant)
         await DbInitializer.SeedDemoTenantAsync(app.Services);
 
+    // After the demo tenant, so Bootstrap:TenantSlug can point at it.
+    await IdentitySeeder.SeedAsync(app.Services);
+
     return;
 }
 
@@ -86,6 +89,8 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 
     if (app.Configuration.GetValue<bool>("Database:SeedDemoTenant"))
         await DbInitializer.SeedDemoTenantAsync(app.Services);
+
+    await IdentitySeeder.SeedAsync(app.Services);
 }
 
 app.UseExceptionHandling();
@@ -114,12 +119,17 @@ app.MapControllers();
 // Liveness must not depend on PostgreSQL: if the database blips, restarting every API pod
 // makes the outage worse, not better. Readiness must, because a pod that cannot reach the
 // database has nothing useful to serve and should leave the Service's endpoint list.
-app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+//
+// All three are explicitly anonymous: the fallback authorization policy demands a signed-in
+// user for every endpoint, and a kubelet has no token. Without this, probes 401 and every pod
+// is killed as unhealthy.
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false })
+    .AllowAnonymous();
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
-});
-app.MapHealthChecks("/health");
+}).AllowAnonymous();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
 

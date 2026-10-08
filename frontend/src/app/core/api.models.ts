@@ -41,6 +41,22 @@ export interface RecipeItemDto {
   readonly ingredientCurrentStock: number;
 }
 
+/** One ingredient a customer may leave out or double. */
+export interface CustomizationOptionDto {
+  readonly ingredientId: string;
+  readonly ingredientName: string;
+}
+
+/**
+ * What the customer menu is allowed to know about a recipe: the ingredient names, and nothing
+ * else. The full {@link ProductRecipeDto} carries quantities and live stock, and is staff-only.
+ */
+export interface ProductCustomizationsDto {
+  readonly productId: string;
+  readonly productName: string;
+  readonly items: readonly CustomizationOptionDto[];
+}
+
 export interface ProductRecipeDto {
   readonly productId: string;
   readonly productName: string;

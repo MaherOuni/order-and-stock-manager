@@ -1,5 +1,7 @@
 using Application.Features.CustomerCare;
 using Domain.Enums;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -12,6 +14,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/service-requests")]
+[Authorize(Policy = AuthPolicies.StaffMember)]
 [Produces("application/json")]
 public sealed class ServiceRequestsController : ControllerBase
 {
@@ -29,6 +32,7 @@ public sealed class ServiceRequestsController : ControllerBase
     ///     POST /api/v1/service-requests
     ///     { "tenantSlug": "demo-resto", "tableNumber": "12", "kind": "CallWaiter" }
     /// </remarks>
+    [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(typeof(ServiceRequestDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -72,6 +76,7 @@ public sealed class ServiceRequestsController : ControllerBase
 /// <summary>What customers thought, once their order was served.</summary>
 [ApiController]
 [Route("api/v1/reviews")]
+[Authorize(Policy = AuthPolicies.StaffMember)]
 [Produces("application/json")]
 public sealed class ReviewsController : ControllerBase
 {

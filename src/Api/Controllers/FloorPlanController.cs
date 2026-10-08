@@ -1,4 +1,6 @@
 using Application.Features.Tenants;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -9,6 +11,7 @@ namespace Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/floor-plan")]
+[Authorize(Policy = AuthPolicies.StaffMember)]
 [Produces("application/json")]
 public sealed class FloorPlanController : ControllerBase
 {
@@ -32,6 +35,7 @@ public sealed class FloorPlanController : ControllerBase
 
     /// <summary>Replaces the plan with the JSON the floor planner generated.</summary>
     /// <response code="400">Not valid JSON, or not a floor plan.</response>
+    [Authorize(Policy = AuthPolicies.ManageRestaurant)]
     [HttpPut]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]

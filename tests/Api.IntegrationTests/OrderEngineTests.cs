@@ -356,11 +356,13 @@ public sealed class OrderEngineTests
         var water = await api.CreateProductAsync("Bottled water", 2m);
         var placed = await api.PlaceOrderOkAsync("1", new OrderItemDto(water, 1));
 
-        // The order routes are tenant-optional for the customer's sake; staff actions are not.
+        // The order routes stay tenant-optional for the customer's sake, so this used to be
+        // refused with a 400 for naming no tenant. Closing an order is now a staff action, and
+        // the refusal comes earlier and for a better reason: nobody is signed in.
         using var anonymous = api.PublicClient();
         var response = await anonymous.PostAsync($"/api/v1/orders/{placed.Id}/complete", content: null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     /// <summary>The 400 problem document, with the shortages extension the API adds.</summary>

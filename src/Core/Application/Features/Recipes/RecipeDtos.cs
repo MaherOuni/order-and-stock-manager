@@ -16,6 +16,22 @@ public sealed record ProductRecipeDto(
     IReadOnlyList<RecipeItemDto> Items,
     int MaxProducibleUnits);
 
+/// <summary>One thing a customer may ask to leave out or double.</summary>
+public sealed record CustomizationOptionDto(Guid IngredientId, string IngredientName);
+
+/// <summary>
+/// What a customer is allowed to know about a recipe: which ingredients it contains, so the
+/// menu can offer "no sugar" only on something that has sugar in it.
+///
+/// Deliberately not <see cref="ProductRecipeDto"/>. That carries QuantityRequired — the actual
+/// formulation — along with live stock levels and how many units are still makeable. None of
+/// that belongs to whoever scans the sticker on table nine.
+/// </summary>
+public sealed record ProductCustomizationsDto(
+    Guid ProductId,
+    string ProductName,
+    IReadOnlyList<CustomizationOptionDto> Items);
+
 public sealed record AddRecipeItemRequest(Guid IngredientId, decimal QuantityRequired);
 
 public sealed record UpdateRecipeItemRequest(decimal QuantityRequired);

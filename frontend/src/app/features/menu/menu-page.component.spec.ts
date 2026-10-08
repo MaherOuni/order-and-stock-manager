@@ -36,30 +36,17 @@ const SALAD: ProductDto = {
   recipeItemCount: 0,
 };
 
-const RECIPE = {
+/**
+ * What `/customizations` returns: ingredient names only. The full recipe — quantities, stock,
+ * producible units — is staff-only, and the customer menu never sees it.
+ */
+const CUSTOMIZATIONS = {
   productId: 'p-latte',
   productName: 'Latte',
   items: [
-    {
-      id: 'r-1',
-      productId: 'p-latte',
-      ingredientId: 'i-milk',
-      ingredientName: 'Milk',
-      unit: 'L',
-      quantityRequired: 0.2,
-      ingredientCurrentStock: 10,
-    },
-    {
-      id: 'r-2',
-      productId: 'p-latte',
-      ingredientId: 'i-coffee',
-      ingredientName: 'Coffee',
-      unit: 'kg',
-      quantityRequired: 0.018,
-      ingredientCurrentStock: 5,
-    },
+    { ingredientId: 'i-milk', ingredientName: 'Milk' },
+    { ingredientId: 'i-coffee', ingredientName: 'Coffee' },
   ],
-  maxProducibleUnits: 50,
 };
 
 describe('MenuPageComponent', () => {
@@ -124,7 +111,7 @@ describe('MenuPageComponent', () => {
     await harness.navigateByUrl('/demo-resto/table/12', MenuPageComponent);
   }
 
-  /** Opens a product's sheet and answers the recipe request it fires. */
+  /** Opens a product's sheet and answers the customizations request it fires. */
   function openProduct(name: string): void {
     // The whole card is the tap target, and it leads with the image tile, so match on content.
     const card = Array.from(el().querySelectorAll('button.card')).find((button) =>
@@ -136,7 +123,7 @@ describe('MenuPageComponent', () => {
     card.click();
     harness.detectChanges();
 
-    http.expectOne(`${BASE}/api/v1/products/p-latte/recipe`).flush(RECIPE);
+    http.expectOne(`${BASE}/api/v1/products/p-latte/customizations`).flush(CUSTOMIZATIONS);
     harness.detectChanges();
   }
 

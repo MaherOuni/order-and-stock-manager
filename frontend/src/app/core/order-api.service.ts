@@ -11,7 +11,7 @@ import {
   OrderDto,
   OrderReviewDto,
   PlaceOrderRequest,
-  ProductRecipeDto,
+  ProductCustomizationsDto,
   ServiceRequestDto,
   SubmitReviewCommand,
 } from './api.models';
@@ -51,10 +51,16 @@ export class OrderApiService {
     );
   }
 
-  /** The product's recipe, so the customer can be offered what there is to change. */
-  getRecipe(tenantSlug: string, productId: string): Observable<ProductRecipeDto> {
-    return this.http.get<ProductRecipeDto>(
-      `${this.baseUrl}/api/v1/products/${encodeURIComponent(productId)}/recipe`,
+  /**
+   * What the customer may change about a dish.
+   *
+   * Not `/recipe`, which is staff-only: that one carries the quantities and the current stock
+   * level of every ingredient, and a scanned QR code does not entitle anyone to the
+   * restaurant's formulation or its inventory.
+   */
+  getCustomizations(tenantSlug: string, productId: string): Observable<ProductCustomizationsDto> {
+    return this.http.get<ProductCustomizationsDto>(
+      `${this.baseUrl}/api/v1/products/${encodeURIComponent(productId)}/customizations`,
       { headers: new HttpHeaders({ 'X-Tenant-Id': tenantSlug }) },
     );
   }

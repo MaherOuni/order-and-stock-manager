@@ -294,7 +294,7 @@ export class ProductSheetComponent {
 
   protected readonly recipe = loadResource(
     computed(() => ({ slug: this.tenantSlug(), productId: this.product().id })),
-    ({ slug, productId }) => this.api.getRecipe(slug, productId),
+    ({ slug, productId }) => this.api.getCustomizations(slug, productId),
   );
 
   protected readonly options = computed(() => this.recipe.data()?.items ?? []);

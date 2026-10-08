@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,7 +9,13 @@ using Application.Features.Orders;
 using Application.Features.Products;
 using Application.Features.Recipes;
 using Application.Features.Tenants;
+using Domain.Entities;
 using Domain.Enums;
+using Domain.ValueObjects;
+using Infrastructure.Identity;
+using Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Api.IntegrationTests;
 
@@ -42,24 +49,79 @@ public sealed class TenantApi
     /// <summary>A client with no X-Tenant-Id header, as a customer scanning a QR code has.</summary>
     public HttpClient PublicClient() => _factory.CreateClient();
 
+    /// <summary>
+    /// A restaurant plus a signed-in Owner for it.
+    ///
+    /// The tenant is seeded straight through the DbContext rather than over
+    /// <c>POST /api/v1/tenants</c>, which is now platform-only — a fixture should not depend on
+    /// an endpoint that production keeps shut. The Owner exists because every admin route is
+    /// authenticated now, so <see cref="Client"/> has to carry a token to be useful.
+    /// </summary>
     public static async Task<TenantApi> ProvisionAsync(PostgresApiFactory factory, string prefix = "t")
     {
-        var slug = $"{prefix}-{Guid.NewGuid():N}";
+        var slugText = $"{prefix}-{Guid.NewGuid():N}";
+        var email = $"owner-{Guid.NewGuid():N}@example.test";
+        const string password = "fixture-owner-password";
 
-        // /api/v1/tenants is bypassed by the tenant middleware — it is what creates tenants.
-        using var admin = factory.CreateClient();
-        var response = await admin.PostAsJsonAsync("/api/v1/tenants",
-            new { name = $"Test {prefix}", slug, currency = "TND" }, Json);
+        Guid tenantId;
 
-        await response.EnsureSuccessAsync();
+        using (var scope = factory.Services.CreateScope())
+        {
+            var sp = scope.ServiceProvider;
 
-        var tenant = (await response.Content.ReadFromJsonAsync<TenantDto>(Json))!;
+            var db = sp.GetRequiredService<ApplicationDbContext>();
+            // Fully qualified: this class has its own Slug property, which otherwise wins.
+            var tenant = new Tenant($"Test {prefix}", Domain.ValueObjects.Slug.From(slugText), "TND");
+
+            db.Tenants.Add(tenant);
+            await db.SaveChangesAsync();
+
+            tenantId = tenant.Id;
+
+            var roles = sp.GetRequiredService<RoleManager<AppRole>>();
+            if (!await roles.RoleExistsAsync(AppRoles.Owner))
+                await roles.CreateAsync(new AppRole(AppRoles.Owner));
+
+            var users = sp.GetRequiredService<UserManager<AppUser>>();
+            var owner = new AppUser
+            {
+                Id = Guid.NewGuid(),
+                UserName = email,
+                Email = email,
+                DisplayName = $"{prefix} owner",
+                TenantId = tenantId,
+                EmailConfirmed = true
+            };
+
+            var created = await users.CreateAsync(owner, password);
+
+            if (!created.Succeeded)
+                throw new InvalidOperationException(
+                    "Could not seed the fixture owner: " +
+                    string.Join("; ", created.Errors.Select(e => e.Description)));
+
+            await users.AddToRoleAsync(owner, AppRoles.Owner);
+        }
 
         var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Tenant-Id", slug);
 
-        return new TenantApi(factory, client, tenant.Id, slug);
+        var signIn = await client.PostAsJsonAsync("/api/v1/auth/login",
+            new { email, password }, Json);
+
+        await signIn.EnsureSuccessAsync();
+
+        var token = (await signIn.Content.ReadFromJsonAsync<FixtureAuth>(Json))!.AccessToken;
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        // Still sent: the tenant now comes from the token, and this proves the two agree rather
+        // than the header being what grants access.
+        client.DefaultRequestHeaders.Add("X-Tenant-Id", slugText);
+
+        return new TenantApi(factory, client, tenantId, slugText);
     }
+
+    private sealed record FixtureAuth(string AccessToken);
 
     public async Task<IngredientDto> CreateIngredientAsync(
         string name, string unit = "kg", decimal stock = 0m, decimal minimumAlert = 0m)
